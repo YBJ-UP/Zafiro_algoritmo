@@ -31,9 +31,17 @@ class persona_dataclass:
 yo2 = persona_dataclass("yo", "yppp", 3, [], opcional=2783)
 
 def saludar(nombre:Optional[str] = None): #me hace ruido que no sea como en ts pero bueno
-    return f"hola ${nombre}" if nombre else "dime tu nombre" #analogo al a? b : c de ts
+    return f"hola {nombre}" if nombre else "dime tu nombre" #analogo al a? b : c de ts
 
 
-print(saludar())
+print(saludar('yael'))
 print(yo["nombre"])
 print(yo2.nombre)
+
+def dostipos(hola:int | str):
+    if isinstance(hola, int):
+        print(f"El parámetro es un número que vale {hola}")
+    else:
+        print(f"El parámetro es la cadena: {hola}")
+    
+dostipos('nnnnnnnn')
