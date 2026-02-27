@@ -18,12 +18,16 @@ class reminder_dict(TypedDict):
     useDefault:bool
     overrides:NotRequired[list[reminder_override]]
 
+class etiquetas_dict(TypedDict):
+    etiqueta:str
+    color:str
+
 class extras_dict(TypedDict):
     prioridad: Literal["baja","media","alta"]
-    etiquetas: list[str]
+    etiquetas: list[etiquetas_dict]
 
 class agenda(TypedDict):
-    kind:str
+    kind:Literal["calendar#event"]
     etag:str
     id:str
     status: Literal["confirmed","tentative","cancelled"]
@@ -46,8 +50,26 @@ class agenda(TypedDict):
     reminders:reminder_dict
     eventType:Literal["default","birthday","focusTime","fromGmail","outOfOffice","workingLocation"]
 
+    extras:extras_dict
+
+class actividades_response_raw(TypedDict): # tiene mas atributos pero estos son los q realmente importan
+    kind:Literal["calendar#event"]
+    etag: str
+    summary: str
+    updated: str
+    timeZone: str
+    accessRole: Literal["none", "freeBusyReader", "reader", "writer", "owner"]
+    defaultReminders:list[reminder_override]
+    nextPageToken:NotRequired[str]
+    nextSyncToken:NotRequired[str]
+    items: list[agenda]
+
+class actividades_response_processed(TypedDict): # tiene mas atributos pero estos son los q realmente importan
+    defaultReminders:list[reminder_override]
+    items: list[agenda]
+
 hola:agenda = {
-    "kind":"aaa",
+    "kind":"calendar#event",
     "etag":"dddddd",
     "id":"kamlkmlkamskmalk",
     "status":"tentative",
@@ -63,7 +85,51 @@ hola:agenda = {
     "iCalUID":"kasmslkmafmakf",
     "sequence":0,
     "reminders": { "useDefault":True },
-    "eventType":"default"
+    "eventType":"default",
+    "extras": { "etiquetas":[{"etiqueta":"chamba", "color":"#000000"}], "prioridad":"alta" }
+}
+adios:agenda = {
+    "kind":"calendar#event",
+    "etag":"asdsadsad",
+    "id":"fwfwfsscd",
+    "status":"tentative",
+    "htmlLink":"lksklmdslk",
+    "created":datetime.now().__str__(),
+    "updated":datetime.now().__str__(),
+    "summary":"noc",
+    "creator": { "email":"correo", "self":False },
+    "organizer": { "email":"safaf", "self":False },
+    "start": { "date":date.today().__str__() },
+    "end": { "date":date.today().__str__() },
+    "transparency":"opaque",
+    "iCalUID":"kasmslkmafmakf",
+    "sequence":0,
+    "reminders": { "useDefault":True },
+    "eventType":"default",
+    "extras": { "etiquetas":[{"etiqueta":"chamba", "color":"#000000"}], "prioridad":"alta" }
 }
 
-print(hola)
+njkadaskd:agenda = {
+    "kind":"calendar#event",
+    "etag":"wwiikqw",
+    "id":"jdsdnjas",
+    "status":"tentative",
+    "htmlLink":"lksklmdslk",
+    "created":datetime.now().__str__(),
+    "updated":datetime.now().__str__(),
+    "summary":"sepa esto es d prueba",
+    "creator": { "email":"correo", "self":False },
+    "organizer": { "email":"safaf", "self":False },
+    "start": { "date":date.today().__str__() },
+    "end": { "date":date.today().__str__() },
+    "transparency":"opaque",
+    "iCalUID":"kasmslkmafmakf",
+    "sequence":0,
+    "reminders": { "useDefault":True },
+    "eventType":"default",
+    "extras": { "etiquetas":[{"etiqueta":"chamba", "color":"#000000"}], "prioridad":"alta" }
+}
+
+todo:actividades_response_processed = { "defaultReminders":[{ "method":"email", "minutes":2 }], "items": [ hola, adios, njkadaskd ] }
+
+print(todo)
