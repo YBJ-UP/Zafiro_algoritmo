@@ -5,26 +5,38 @@ class creator_dict(TypedDict):
     email:str
     self:NotRequired[bool]
 
+# -------------------------------------------------------------------------------
+
 class date_dict(TypedDict):
     date:NotRequired[str]
     dateTime:NotRequired[str]
     timeZone:NotRequired[str]
 
+# -------------------------------------------------------------------------------
+
 class reminder_override(TypedDict):
     method:Literal["email","popup"]
     minutes:int
+
+# -------------------------------------------------------------------------------
 
 class reminder_dict(TypedDict):
     useDefault:bool
     overrides:NotRequired[list[reminder_override]]
 
+# -------------------------------------------------------------------------------
+
 class etiquetas_dict(TypedDict):
     etiqueta:str
     color:str
 
+# -------------------------------------------------------------------------------
+
 class extras_dict(TypedDict):
     prioridad: Literal["baja","media","alta"]
     etiquetas: list[etiquetas_dict]
+
+# -------------------------------------------------------------------------------
 
 class agenda_raw(TypedDict):
     kind:Literal["calendar#event"]
@@ -52,6 +64,8 @@ class agenda_raw(TypedDict):
 
     extras:extras_dict
 
+# -------------------------------------------------------------------------------
+
 class agenda_processed(TypedDict):
     id:str
     status: Literal["confirmed","tentative","cancelled"]
@@ -72,6 +86,8 @@ class agenda_processed(TypedDict):
 
     extras:extras_dict
 
+# -------------------------------------------------------------------------------
+
 class actividades_response_raw(TypedDict): # tiene mas atributos pero estos son los q realmente importan
     kind:Literal["calendar#event"]
     etag: str
@@ -84,9 +100,13 @@ class actividades_response_raw(TypedDict): # tiene mas atributos pero estos son 
     nextSyncToken:NotRequired[str]
     items: list[agenda_raw]
 
+# -------------------------------------------------------------------------------
+
 class actividades_response_processed(TypedDict): # tiene mas atributos pero estos son los q realmente importan
     defaultReminders:list[reminder_override]
     items: list[agenda_processed]
+
+# -------------------------------------------------------------------------------
 
 hola:agenda_processed = {
     "id":"kamlkmlkamskmalk",
