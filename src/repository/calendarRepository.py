@@ -14,7 +14,7 @@ hola:agenda = {
     "transparency":"opaque",
     "reminders": { "useDefault":True },
     "eventType":"default",
-    "extras": { "etiquetas":[{"etiqueta":"chamba", "color":"#000000"}], "prioridad":"alta" }
+    "extras": { "etiquetas":[{"etiqueta":"chamba", "color":"#ff0000"}], "prioridad":"alta" }
 }
 adios:agenda = {
     "id":"fwfwfsscd",
@@ -27,7 +27,7 @@ adios:agenda = {
     "transparency":"opaque",
     "reminders": { "useDefault":True },
     "eventType":"default",
-    "extras": { "etiquetas":[{"etiqueta":"chamba", "color":"#000000"}], "prioridad":"alta" }
+    "extras": { "etiquetas":[{"etiqueta":"estudio", "color":"#00ff00"}], "prioridad":"alta" }
 }
 
 njkadaskd:agenda = {
@@ -41,7 +41,7 @@ njkadaskd:agenda = {
     "transparency":"opaque",
     "reminders": { "useDefault":True },
     "eventType":"default",
-    "extras": { "etiquetas":[{"etiqueta":"chamba", "color":"#000000"}], "prioridad":"alta" }
+    "extras": { "etiquetas":[{"etiqueta":"personal", "color":"#0000ff"}], "prioridad":"alta" }
 }
 
 todo:actividades_response = { "defaultReminders":[{ "method":"email", "minutes":2 }], "items": [ hola, adios, njkadaskd ] }
