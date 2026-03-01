@@ -38,34 +38,6 @@ class extras_dict(TypedDict):
 
 # -------------------------------------------------------------------------------
 
-class agenda_raw(TypedDict):
-    kind:Literal["calendar#event"]
-    etag:str
-    id:str
-    status: Literal["confirmed","tentative","cancelled"]
-    htmlLink:str
-    created:str
-    updated:str
-    summary:NotRequired[str]
-    creator:creator_dict
-    organizer:creator_dict
-    start:date_dict
-    end:date_dict
-
-    # solo en cosas q c repiten
-    recurringEventId:NotRequired[str]
-    originalStartTime:NotRequired[date_dict]
-
-    transparency:NotRequired[Literal["transparent","opaque"]]
-    iCalUID:str
-    sequence:int
-    reminders:reminder_dict
-    eventType:Literal["default","birthday","focusTime","fromGmail","outOfOffice","workingLocation"]
-
-    extras:extras_dict
-
-# -------------------------------------------------------------------------------
-
 class agenda_processed(TypedDict):
     id:str
     status: Literal["confirmed","tentative","cancelled"]
@@ -85,20 +57,6 @@ class agenda_processed(TypedDict):
     eventType:Literal["default","birthday","focusTime","fromGmail","outOfOffice","workingLocation"]
 
     extras:extras_dict
-
-# -------------------------------------------------------------------------------
-
-class actividades_response_raw(TypedDict): # tiene mas atributos pero estos son los q realmente importan
-    kind:Literal["calendar#event"]
-    etag: str
-    summary: str
-    updated: str
-    timeZone: str
-    accessRole: Literal["none", "freeBusyReader", "reader", "writer", "owner"]
-    defaultReminders:list[reminder_override]
-    nextPageToken:NotRequired[str]
-    nextSyncToken:NotRequired[str]
-    items: list[agenda_raw]
 
 # -------------------------------------------------------------------------------
 
