@@ -1,4 +1,3 @@
-from datetime import date, datetime
 from typing import Literal, NotRequired, TypedDict
 
 class creator_dict(TypedDict):
@@ -65,51 +64,3 @@ class actividades_response(TypedDict): # tiene mas atributos pero estos son los 
     items: list[agenda]
 
 # -------------------------------------------------------------------------------
-
-hola:agenda = {
-    "id":"kamlkmlkamskmalk",
-    "status":"tentative",
-    "created":datetime.now().__str__(),
-    "updated":datetime.now().__str__(),
-    "summary":"eso tilin",
-    "organizer": { "email":"safaf", "self":False },
-    "start": { "date":date.today().__str__() },
-    "end": { "date":date.today().__str__() },
-    "transparency":"opaque",
-    "reminders": { "useDefault":True },
-    "eventType":"default",
-    "extras": { "etiquetas":[{"etiqueta":"chamba", "color":"#000000"}], "prioridad":"alta" }
-}
-adios:agenda = {
-    "id":"fwfwfsscd",
-    "status":"tentative",
-    "created":datetime.now().__str__(),
-    "updated":datetime.now().__str__(),
-    "summary":"noc",
-    "organizer": { "email":"safaf", "self":False },
-    "start": { "date":date.today().__str__() },
-    "end": { "date":date.today().__str__() },
-    "transparency":"opaque",
-    "reminders": { "useDefault":True },
-    "eventType":"default",
-    "extras": { "etiquetas":[{"etiqueta":"chamba", "color":"#000000"}], "prioridad":"alta" }
-}
-
-njkadaskd:agenda = {
-    "id":"jdsdnjas",
-    "status":"tentative",
-    "created":datetime.now().__str__(),
-    "updated":datetime.now().__str__(),
-    "summary":"sepa esto es d prueba",
-    "organizer": { "email":"safaf", "self":False },
-    "start": { "date":date.today().__str__() },
-    "end": { "date":date.today().__str__() },
-    "transparency":"opaque",
-    "reminders": { "useDefault":True },
-    "eventType":"default",
-    "extras": { "etiquetas":[{"etiqueta":"chamba", "color":"#000000"}], "prioridad":"alta" }
-}
-
-todo:actividades_response = { "defaultReminders":[{ "method":"email", "minutes":2 }], "items": [ hola, adios, njkadaskd ] }
-
-print(todo)
