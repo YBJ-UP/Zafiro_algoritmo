@@ -1,9 +1,5 @@
 from typing import Literal, NotRequired, TypedDict
 
-class creator_dict(TypedDict):
-    email:str
-    self:NotRequired[bool]
-
 # -------------------------------------------------------------------------------
 
 class date_dict(TypedDict):
@@ -43,7 +39,6 @@ class agenda(TypedDict):
     created:str
     updated:str
     summary:NotRequired[str]
-    organizer:creator_dict
     start:date_dict
     end:date_dict
 
