@@ -38,7 +38,7 @@ class extras_dict(TypedDict):
 
 # -------------------------------------------------------------------------------
 
-class agenda_processed(TypedDict):
+class agenda(TypedDict):
     id:str
     status: Literal["confirmed","tentative","cancelled"]
     created:str
@@ -60,13 +60,13 @@ class agenda_processed(TypedDict):
 
 # -------------------------------------------------------------------------------
 
-class actividades_response_processed(TypedDict): # tiene mas atributos pero estos son los q realmente importan
+class actividades_response(TypedDict): # tiene mas atributos pero estos son los q realmente importan
     defaultReminders:list[reminder_override]
-    items: list[agenda_processed]
+    items: list[agenda]
 
 # -------------------------------------------------------------------------------
 
-hola:agenda_processed = {
+hola:agenda = {
     "id":"kamlkmlkamskmalk",
     "status":"tentative",
     "created":datetime.now().__str__(),
@@ -80,7 +80,7 @@ hola:agenda_processed = {
     "eventType":"default",
     "extras": { "etiquetas":[{"etiqueta":"chamba", "color":"#000000"}], "prioridad":"alta" }
 }
-adios:agenda_processed = {
+adios:agenda = {
     "id":"fwfwfsscd",
     "status":"tentative",
     "created":datetime.now().__str__(),
@@ -95,7 +95,7 @@ adios:agenda_processed = {
     "extras": { "etiquetas":[{"etiqueta":"chamba", "color":"#000000"}], "prioridad":"alta" }
 }
 
-njkadaskd:agenda_processed = {
+njkadaskd:agenda = {
     "id":"jdsdnjas",
     "status":"tentative",
     "created":datetime.now().__str__(),
@@ -110,6 +110,6 @@ njkadaskd:agenda_processed = {
     "extras": { "etiquetas":[{"etiqueta":"chamba", "color":"#000000"}], "prioridad":"alta" }
 }
 
-todo:actividades_response_processed = { "defaultReminders":[{ "method":"email", "minutes":2 }], "items": [ hola, adios, njkadaskd ] }
+todo:actividades_response = { "defaultReminders":[{ "method":"email", "minutes":2 }], "items": [ hola, adios, njkadaskd ] }
 
 print(todo)
