@@ -9,17 +9,39 @@ from model.calendar import agenda, actividades_response
 
 # RECIBIR actividades
 # RECIBIR restricciones
-#   RECIBIR gap (espacio entre actividades)
-#   RECIBIR tag (¿se le dará prioridad a cierto tipo de actividades según sus etiquetas?)
-#   RECIBIR ??? (noc q más llevaría)
+#   tiempo de descanso
+#   gap? //espacio entre actividades
+#   tag? //¿se le dará prioridad a cierto tipo de actividades según sus etiquetas? ¿no será mucho poner esto?
+#   ??? //noc q más llevaría
 
 # ANALIZAR actividades
-#   SI start.timezone NO EXISTE ENTONCES es estática Y NO se pueden poner actividades en ese dia
-#   SI transparency ES IGUAL A opaque ENTONCES es estática
-#   REORDENAR POR extras.prioridad DE alta A baja
-#   REORDENAR POR extras.etiquetas PRIMERO tag
+#   SI actividad.start.timezone NO EXISTE ENTONCES es estática Y NO se pueden poner actividades en ese dia //por si alguna tarea se tiene que mover de día
+#   SI actividad.transparency ES IGUAL A opaque ENTONCES es estática
+#   CALCULAR duración de cada actividad //algún método ha de haber para restar fechas COMO actividad.duracion //se le añadiría este atributo
+#   REORDENAR POR extras.prioridad DE alta A baja //creo que se habían sacado de extras pero no recuerdo
+#   SI tag EXISTE REORDENAR POR extras.etiquetas PRIMERO tag
 
-# 
+# DEFINIR dias_inhabiles SEGÚN actividad DONDE actividad.start.timeZone NO EXISTE
+# //quedaria algo como dias_inhabiles = [{"2026-03-13"},{"2026-03-14"}..] o al menos eso pienso
+
+# DEFINIR rangos_utilizables SEGÚN tiempo de descanso Y actividades opacas
+# //aunque en teoría el tiempo de descanso se guarda como una actividad opaca así q noc
+# //según yo quedaría algo como rango_utilizable = [{7,8},{17,19},{21,22}] pero no sé cómo sería así de 7:30 u horas no exactas
+# //otra cosa es que así el espacio entre cada una se tiene que calcular al momento y no sé qué tan bueno sea eso
+# //la verdad no creo que eso sea tan problemático así que equis
+
+# //por ahora asumiré q la duración ya viene dentro del rango, algo como { inicio=fecha1, fin=fecha2, duracion=numero } aunque lo veo algo noc, igual guardar con fecha hace que no se ponga el dia por aparte
+# //puede que la duración se guarde en segundos para no andar quemandome tanto el coco
+
+# //ORGANIZAR
+# ITERAR EN rango_utilizable COMO i //no tocará los días inhabiles, creo que no es necesario definirlos
+#   POR actividad DE actividades //ya vienen ordenadas por prioridad y etiqueta si esta se especificó
+#       SI actividad.duracion ES MAYOR A rango_utilizable[i].duracion ENTONCES SALTAR
+#       ASIGNAR rango_utilizable[i].inicio A actividad.start.dateTime
+#       CALCULAR fecha en la que acaba COMO actividad.end.dateTime
+#       SIGUIENTE i //así como lo veo no tiene backtracking
+# //creo que las iteraciones están al revés, debería iterar primero por actividad y después por el otro
+# //aún falta pero bueno
 
 # FIN
 
