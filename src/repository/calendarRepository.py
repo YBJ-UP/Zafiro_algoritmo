@@ -3,6 +3,26 @@ from model.calendar import agenda, actividades_response
 
 # aqui son las funcionalidades pero ahorita
 
+# PSEUDOCODIGO
+
+# INICIO
+
+# RECIBIR actividades
+# RECIBIR restricciones
+#   RECIBIR gap (espacio entre actividades)
+#   RECIBIR tag (¿se le dará prioridad a cierto tipo de actividades según sus etiquetas?)
+#   RECIBIR ??? (noc q más llevaría)
+
+# ANALIZAR actividades
+#   SI start.timezone NO EXISTE ENTONCES es estática Y NO se pueden poner actividades en ese dia
+#   SI transparency ES IGUAL A opaque ENTONCES es estática
+#   REORDENAR POR extras.prioridad DE alta A baja
+#   REORDENAR POR extras.etiquetas PRIMERO tag
+
+# 
+
+# FIN
+
 hola:agenda = {
     "id":"kamlkmlkamskmalk",
     "status":"tentative",
