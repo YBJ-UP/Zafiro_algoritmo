@@ -1,17 +1,42 @@
-- name: Deploy via SSH
+name: Deploy Zafiro API
+
+on:
+  push:
+    branches: [ main ] # Asegúrate de que tu rama se llame main, si es master cámbialo aquí
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script_stop: true # Detiene el proceso si algún comando falla
           script: |
-            cd ~/Zafiro_Algoritmo
+            # 1. Cargar el entorno de NVM (Soluciona el error 'npm/pm2 command not found')
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+            # 2. Entrar al directorio del proyecto
+            cd ~/Zafiro_API_2 #camviar la chingadera
+
+            # 3. Actualizar el código desde GitHub
+            # Nota: Si esto falla, recuerda ejecutar 'ssh -T git@github.com' una vez en tu servidor
             git pull origin main
-            
-            # Usar la ruta donde se instaló uv realmente
-            export PATH="$HOME/.local/bin:$PATH"
-            
-            uv sync --frozen
-            
-            # Reiniciar con PM2 (apuntando a la carpeta .venv que crea uv)
-            pm2 restart zafiro-api || pm2 start main.py --name "zafiro-api" --interpreter ./.venv/bin/python
+
+            # 4. Instalar dependencias de producción
+            npm install
+
+            #cambiar los nombres para que coincidad con el proyecto
+            # 5. Reiniciar la API con PM2 usando TypeScript (ts-node)
+            # Intentamos reiniciar; si no existe el proceso, lo creamos desde cero.
+            pm2 restart zafiro-api || pm2 start src/server.ts --name "zafiro-api" --interpreter ts-node
+
+            # 6. Guardar el estado de PM2 para que sobreviva a reinicios del servidor
+            pm2 save
