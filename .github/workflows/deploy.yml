@@ -1,0 +1,17 @@
+- name: Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/Zafiro_Algoritmo
+            git pull origin main
+            
+            # Usar la ruta donde se instaló uv realmente
+            export PATH="$HOME/.local/bin:$PATH"
+            
+            uv sync --frozen
+            
+            # Reiniciar con PM2 (apuntando a la carpeta .venv que crea uv)
+            pm2 restart zafiro-api || pm2 start main.py --name "zafiro-api" --interpreter ./.venv/bin/python
