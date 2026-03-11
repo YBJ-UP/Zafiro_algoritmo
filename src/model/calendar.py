@@ -10,7 +10,7 @@ class date_dict(TypedDict):
 # -------------------------------------------------------------------------------
 
 class reminder_override(TypedDict):
-    method:Literal["email","popup"]
+    method:Literal["popup"]
     minutes:int
 
 # -------------------------------------------------------------------------------
@@ -35,10 +35,9 @@ class extras_dict(TypedDict):
 
 class agenda(TypedDict):
     id:str
-    status: Literal["confirmed","tentative","cancelled"]
     created:str
     updated:str
-    summary:NotRequired[str]
+    summary:str
     start:date_dict
     end:date_dict
 
@@ -48,7 +47,6 @@ class agenda(TypedDict):
 
     transparency:NotRequired[Literal["transparent","opaque"]]
     reminders:reminder_dict
-    eventType:Literal["default","birthday","focusTime","fromGmail","outOfOffice","workingLocation"]
 
     extras:extras_dict
 
