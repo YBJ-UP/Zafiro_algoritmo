@@ -45,7 +45,7 @@ class agenda(TypedDict):
     recurringEventId:NotRequired[str]
     originalStartTime:NotRequired[date_dict]
 
-    transparency:NotRequired[Literal["transparent","opaque"]]
+    transparency:Literal["transparent","opaque"]
     reminders:reminder_dict
 
     extras:extras_dict
