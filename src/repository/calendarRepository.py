@@ -1,4 +1,5 @@
-from datetime import date, datetime
+from datetime import date, datetime, time
+from typing import TypedDict
 from model.calendar import agenda, actividades_response
 
 # aqui son las funcionalidades pero ahorita
@@ -101,6 +102,70 @@ from model.calendar import agenda, actividades_response
 
 # FIN MAIN
 # FIN
+
+# algun dia pondre estas en model pq ahi van
+
+class rango_tiempo(TypedDict):
+    inicio:date
+    fin:date
+
+class rango_tiempo_dt(TypedDict):
+    inicio:datetime
+    fin:datetime
+
+class restricciones_etiquetas(TypedDict):
+    tag:str
+    horario:rango_tiempo
+
+class candidato:
+    tareas_agendadas:list[agenda] = []
+    tareas_no_agendadas:list[agenda] = []
+    tiempo_libre_restante:list[rango_tiempo_dt] = []
+    puntaje:int = 0
+
+# FUNCIONES DE APOYO
+
+def convertDate(fecha:str, tiempo:time) -> datetime:
+    fecha_parsed = date.strptime( fecha, "%Y-%m-%d" )
+    return datetime.combine(fecha_parsed, tiempo)
+
+def convertStrToDt(fecha:str):
+    return datetime.strptime(fecha, "%Y-%m-%d %H:%M:%S")
+
+def getTime():
+    print("aaa")
+
+# FUNCIÓN PRINCIPAL
+
+def sortCalendar(
+        actividades:list[agenda],
+        tiempo_descanso:rango_tiempo, # este se concertirá en un arreglo de dateTime
+        dias_contemplados:int = 7, # hasta cuantos dias se puede recorrer una tarea supongo
+        gap:int = 15,
+        tag:str | None = None,
+        tag_restriction:restricciones_etiquetas | None = None, #podria venir como un arreglo de restricciones pero por los tiempos capaz y ni siquiera se implemente
+        long_first:bool = False
+) -> None:
+    tiempo_ocupado:list[rango_tiempo_dt] = []
+    inicioDia:time = time(0,0,0)
+    finDia:time = time(23,59,59)
+
+
+    for actividad in actividades:
+        if actividad["transparency"] == "opaque":
+            if "date" in actividad["start"]:
+                assert "date" in actividad["end"]
+                tiempo_ocupado.append( { "inicio":convertDate( actividad["start"]["date"], inicioDia ), "fin":convertDate( actividad["end"]["date"], finDia ) } )
+            else:
+                assert "dateTime" in actividad["start"] and "dateTime" in actividad["end"]
+                tiempo_ocupado.append({ "inicio":convertStrToDt(actividad["start"]["dateTime"]), "fin":convertStrToDt(actividad["end"]["dateTime"]) })
+
+    for i in range(dias_contemplados):
+        print(i)
+
+    print(tiempo_ocupado)
+
+
 
 hola:agenda = {
     "id":"kamlkmlkamskmalk",
