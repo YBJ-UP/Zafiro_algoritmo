@@ -1,6 +1,6 @@
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from typing import TypedDict
-from model.calendar import agenda, actividades_response
+from model import calendar as c
 
 # aqui son las funcionalidades pero ahorita
 
@@ -118,8 +118,8 @@ class restricciones_etiquetas(TypedDict):
     horario:rango_tiempo
 
 class candidato:
-    tareas_agendadas:list[agenda] = []
-    tareas_no_agendadas:list[agenda] = []
+    tareas_agendadas:list[c.agenda] = []
+    tareas_no_agendadas:list[c.agenda] = []
     tiempo_libre_restante:list[rango_tiempo_dt] = []
     puntaje:int = 0
 
@@ -138,15 +138,22 @@ def getTime():
 # FUNCIÓN PRINCIPAL
 
 def sortCalendar(
-        actividades:list[agenda],
+        actividades:list[c.agenda],
         tiempo_descanso:rango_tiempo, # este se concertirá en un arreglo de dateTime
         dias_contemplados:int = 7, # hasta cuantos dias se puede recorrer una tarea supongo
         gap:int = 15,
         tag:str | None = None,
         tag_restriction:restricciones_etiquetas | None = None, #podria venir como un arreglo de restricciones pero por los tiempos capaz y ni siquiera se implemente
         long_first:bool = False
-) -> None:
+) -> None: #none por ahora
+    ancho_haz = 5
+
+    actividades_estaticas:list[c.agenda] = []
+    actividades_libres:list[c.agenda] = []
+
+    # tiempo_libre:list[rango_tiempo_dt] = []
     tiempo_ocupado:list[rango_tiempo_dt] = []
+
     inicioDia:time = time(0,0,0)
     finDia:time = time(23,59,59)
 
@@ -159,15 +166,20 @@ def sortCalendar(
             else:
                 assert "dateTime" in actividad["start"] and "dateTime" in actividad["end"]
                 tiempo_ocupado.append({ "inicio":convertStrToDt(actividad["start"]["dateTime"]), "fin":convertStrToDt(actividad["end"]["dateTime"]) })
+            actividades_estaticas.append(actividad)
+        else:
+            actividades_libres.append(actividad)
+
+    fecha_maxima = date.today() + timedelta(days=dias_contemplados)
 
     for i in range(dias_contemplados):
         print(i)
 
-    print(tiempo_ocupado)
+    print(fecha_maxima, ancho_haz, tiempo_ocupado) # el editor m da lata si no accedo a los datos
 
 
 
-hola:agenda = {
+hola:c.agenda = {
     "id":"kamlkmlkamskmalk",
     "created":datetime.now().__str__(),
     "updated":datetime.now().__str__(),
@@ -178,30 +190,32 @@ hola:agenda = {
     "reminders": { "useDefault":True },
     "extras": { "etiquetas":[{"etiqueta":"chamba", "color":"#ff0000"}], "prioridad":"alta" }
 }
-adios:agenda = {
+adios:c.agenda = {
     "id":"fwfwfsscd",
     "created":datetime.now().__str__(),
     "updated":datetime.now().__str__(),
     "summary":"noc",
-    "start": { "date":date.today().__str__() },
-    "end": { "date":date.today().__str__() },
+    "start": { "date":(date.today()+timedelta(days=1)).__str__() },
+    "end": { "date":(date.today()+timedelta(days=1)).__str__() },
     "transparency":"opaque",
     "reminders": { "useDefault":True },
     "extras": { "etiquetas":[{"etiqueta":"estudio", "color":"#00ff00"}], "prioridad":"alta" }
 }
 
-njkadaskd:agenda = {
+njkadaskd:c.agenda = {
     "id":"jdsdnjas",
     "created":datetime.now().__str__(),
     "updated":datetime.now().__str__(),
     "summary":"sepa esto es d prueba",
-    "start": { "date":date.today().__str__() },
-    "end": { "date":date.today().__str__() },
+    "start": { "date":(date.today()+timedelta(days=2)).__str__() },
+    "end": { "date":(date.today()+timedelta(days=2)).__str__() },
     "transparency":"opaque",
     "reminders": { "useDefault":True },
     "extras": { "etiquetas":[{"etiqueta":"personal", "color":"#0000ff"}], "prioridad":"alta" }
 }
 
-todo:actividades_response = { "defaultReminders":[{ "method":"popup", "minutes":2 }], "items": [ hola, adios, njkadaskd ] }
+todo:c.actividades_response = { "defaultReminders":[{ "method":"popup", "minutes":2 }], "items": [ hola, adios, njkadaskd ] }
 
 print(todo)
+
+sortCalendar(todo["items"], { "inicio":datetime.now(), "fin":datetime.now() })
