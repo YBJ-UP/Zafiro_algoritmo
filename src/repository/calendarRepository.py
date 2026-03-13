@@ -1,6 +1,9 @@
 from datetime import date, datetime, time, timedelta
 from typing import TypedDict
-from model import calendar as c
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from model.calendarModel import agenda, actividades_response
 
 # aqui son las funcionalidades pero ahorita
 
@@ -118,8 +121,8 @@ class restricciones_etiquetas(TypedDict):
     horario:rango_tiempo
 
 class candidato:
-    tareas_agendadas:list[c.agenda] = []
-    tareas_no_agendadas:list[c.agenda] = []
+    tareas_agendadas:list[agenda] = []
+    tareas_no_agendadas:list[agenda] = []
     tiempo_libre_restante:list[rango_tiempo_dt] = []
     puntaje:int = 0
 
@@ -138,7 +141,7 @@ def getTime():
 # FUNCIÓN PRINCIPAL
 
 def sortCalendar(
-        actividades:list[c.agenda],
+        actividades:list[agenda],
         tiempo_descanso:rango_tiempo, # este se concertirá en un arreglo de dateTime
         dias_contemplados:int = 7, # hasta cuantos dias se puede recorrer una tarea supongo
         gap:int = 15,
@@ -148,8 +151,8 @@ def sortCalendar(
 ) -> None: #none por ahora
     ancho_haz = 5
 
-    actividades_estaticas:list[c.agenda] = []
-    actividades_libres:list[c.agenda] = []
+    actividades_estaticas:list[agenda] = []
+    actividades_libres:list[agenda] = []
 
     # tiempo_libre:list[rango_tiempo_dt] = []
     tiempo_ocupado:list[rango_tiempo_dt] = []
@@ -175,11 +178,13 @@ def sortCalendar(
     for i in range(dias_contemplados):
         print(i)
 
-    print(fecha_maxima, ancho_haz, tiempo_ocupado) # el editor m da lata si no accedo a los datos
+    print(fecha_maxima) # el editor m da lata si no accedo a los datos
+    print(ancho_haz)
+    print(tiempo_ocupado)
 
 
 
-hola:c.agenda = {
+hola:agenda = {
     "id":"kamlkmlkamskmalk",
     "created":datetime.now().__str__(),
     "updated":datetime.now().__str__(),
@@ -190,7 +195,7 @@ hola:c.agenda = {
     "reminders": { "useDefault":True },
     "extras": { "etiquetas":[{"etiqueta":"chamba", "color":"#ff0000"}], "prioridad":"alta" }
 }
-adios:c.agenda = {
+adios:agenda = {
     "id":"fwfwfsscd",
     "created":datetime.now().__str__(),
     "updated":datetime.now().__str__(),
@@ -202,7 +207,7 @@ adios:c.agenda = {
     "extras": { "etiquetas":[{"etiqueta":"estudio", "color":"#00ff00"}], "prioridad":"alta" }
 }
 
-njkadaskd:c.agenda = {
+njkadaskd:agenda = {
     "id":"jdsdnjas",
     "created":datetime.now().__str__(),
     "updated":datetime.now().__str__(),
@@ -214,7 +219,7 @@ njkadaskd:c.agenda = {
     "extras": { "etiquetas":[{"etiqueta":"personal", "color":"#0000ff"}], "prioridad":"alta" }
 }
 
-todo:c.actividades_response = { "defaultReminders":[{ "method":"popup", "minutes":2 }], "items": [ hola, adios, njkadaskd ] }
+todo:actividades_response = { "defaultReminders":[{ "method":"popup", "minutes":2 }], "items": [ hola, adios, njkadaskd ] }
 
 print(todo)
 
