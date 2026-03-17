@@ -218,8 +218,8 @@ adios:agenda = {
     "created":datetime.now().__str__(),
     "updated":datetime.now().__str__(),
     "summary":"noc",
-    "start": { "date":(date.today()+timedelta(days=1)).__str__() },
-    "end": { "date":(date.today()+timedelta(days=1)).__str__() },
+    "start": { "dateTime":(datetime.today()+timedelta(days=1, hours=9)).__str__() },
+    "end": { "dateTime":(datetime.today()+timedelta(days=1, hours=12)).__str__() },
     "transparency":"opaque",
     "reminders": { "useDefault":True },
     "extras": { "etiquetas":{"etiqueta":"estudio", "color":"#00ff00"}, "prioridad":"alta" }
