@@ -57,8 +57,8 @@ from model.calendarModel import agenda, actividades_response
 # DICCIONARIOS DE APOYO
 
 class rango_tiempo(TypedDict):
-    inicio:date
-    fin:date
+    inicio:time
+    fin:time
 
 # -------------------------------------------------------------------------------
 
@@ -104,7 +104,7 @@ def orderByPriority(e:agenda):
 
 # -------------------------------------------------------------------------------
 
-def fuseTimes(tiempos:list[rango_tiempo_dt]) -> list[rango_tiempo_dt]:
+def mergeTimes(tiempos:list[rango_tiempo_dt]) -> list[rango_tiempo_dt]:
     if not tiempos:
         return []
     tiempo_reordenado:list[rango_tiempo_dt] = sorted(tiempos, key=lambda e:e["inicio"])
@@ -121,8 +121,25 @@ def fuseTimes(tiempos:list[rango_tiempo_dt]) -> list[rango_tiempo_dt]:
 
 # -------------------------------------------------------------------------------
 
-def getFreeTime():
-    print("aaa")
+def getFreeTime(tiempo_ocupado:list[rango_tiempo_dt], inicio:datetime, fin:datetime) -> list[rango_tiempo_dt]:
+    indice = inicio
+
+    tiempo_reordenado:list[rango_tiempo_dt] = []
+
+    for rango in tiempo_ocupado:
+        if rango["fin"] <= indice:
+            continue
+        if indice < rango["inicio"]:
+            tiempo_reordenado.append({"inicio":indice, "fin":rango["inicio"]})
+        indice = max(indice, rango["fin"])
+    
+    if indice < fin:
+        tiempo_reordenado.append({"inicio":indice, "fin":fin})
+    
+    return tiempo_reordenado
+
+# -------------------------------------------------------------------------------
+
 
 # FUNCIÓN PRINCIPAL
 
@@ -140,7 +157,7 @@ def sortCalendar(
     actividades_estaticas:list[agenda] = []
     actividades_libres:list[agenda] = []
 
-    # tiempo_libre:list[rango_tiempo_dt] = [] # no sé como manejarlo, entiendo que lo mejor seria tenerlo pero que tal si se acomodan las tareas alrededor del tiempo ocupado
+    tiempo_libre:list[rango_tiempo_dt] = [] # no sé como manejarlo, entiendo que lo mejor seria tenerlo pero que tal si se acomodan las tareas alrededor del tiempo ocupado
     tiempo_ocupado:list[rango_tiempo_dt] = []
 
     # para actividades que tomen todo el dia
@@ -160,17 +177,28 @@ def sortCalendar(
         else:
             actividades_libres.append(actividad)
         
-    actividades_libres.sort(key=orderByPriority)
+    actividades_libres.sort(key=orderByPriority) # este se deberia de acomodar dps siento yo
 
-    fecha_maxima = date.today() + timedelta(days=dias_contemplados)
+    for i in range(dias_contemplados): # lo queria hacer funcion de apoyo pero ya era quemarme mucho el coco
+        dia_actual = date.today() + timedelta(days=i)
+        dia_siguiente = dia_actual + timedelta(days=1)
 
-    for i in range(dias_contemplados): # se suppone que con este se transforman en datetime los dias libres, podria ser una funcion de apoyo
-        print(i)
+        inicio_descanso = datetime.combine(dia_actual, tiempo_descanso["fin"])
+        fin_descanso = datetime.combine(dia_siguiente, tiempo_descanso["inicio"])
 
-    print(fecha_maxima) # el editor m da lata si no accedo a los datos
+        tiempo_ocupado.append({"inicio":inicio_descanso, "fin":fin_descanso})
+    
+    tiempo_ocupado = mergeTimes(tiempo_ocupado)
+
+    dia_inicio = datetime.now() + timedelta(minutes=gap)
+    dia_limite = datetime.combine(date.today() + timedelta(days=dias_contemplados), time(hour=23, minute=59, second=59))
+
+    tiempo_libre = getFreeTime(tiempo_ocupado, dia_inicio, dia_limite)
+
     print(ancho_haz)
-    print(tiempo_ocupado)
-    print(actividades_libres)
+    print(tiempo_ocupado, "\n")
+    print(actividades_libres, "\n")
+    print(tiempo_libre)
 
 
 
@@ -223,6 +251,4 @@ transparente:agenda = {
 
 todo:actividades_response = { "defaultReminders":[{ "method":"popup", "minutes":2 }], "items": [ hola, adios, njkadaskd, transparente ] }
 
-print(todo)
-
-sortCalendar(todo["items"], { "inicio":datetime.now(), "fin":datetime.now()+timedelta(hours=3) })
+sortCalendar(todo["items"], { "inicio":time(hour=8), "fin":time(hour=22) })
