@@ -13,60 +13,6 @@ from model.calendarModel import agenda, actividades_response
 
 # INICIO
 
-# RECIBIR actividades
-# RECIBIR restricciones
-#   tiempo de descanso
-#   gap? //espacio entre actividades
-#   tag? //¿se le dará prioridad a cierto tipo de actividades según sus etiquetas? ¿no será mucho poner esto?
-#   ??? //noc q más llevaría
-
-# ANALIZAR actividades
-#   SI actividad.start.timezone NO EXISTE ENTONCES es estática Y NO se pueden poner actividades en ese dia //por si alguna tarea se tiene que mover de día
-#   SI actividad.transparency ES IGUAL A opaque ENTONCES es estática
-#   CALCULAR duración de cada actividad //algún método ha de haber para restar fechas COMO actividad.duracion //se le añadiría este atributo
-#   SI tag EXISTE REORDENAR actividades SEGUN extras.tag, extras.prioridad SI NO REORDENAR actividades SEGUN extras.prioridad FIN SI
-
-# DEFINIR dias_inhabiles SEGÚN actividad DONDE actividad.transparency IGUAL A opaque
-# //quedaria algo como dias_inhabiles = [{"2026-03-13"},{"2026-03-14"}..] o al menos eso pienso
-# //viendolo bn noc pq tiene corchetes
-
-# DEFINIR rangos_utilizables SEGÚN tiempo de descanso Y actividades opacas
-# //aunque en teoría el tiempo de descanso se guarda como una actividad opaca así q noc
-# //según yo quedaría algo como rango_utilizable = [{7,8},{17,19},{21,22}] pero no sé cómo sería así de 7:30 u horas no exactas
-# //otra cosa es que así el espacio entre cada una se tiene que calcular al momento y no sé qué tan bueno sea eso
-# //la verdad no creo que eso sea tan problemático así que equis
-
-# //por ahora asumiré q la duración ya viene dentro del rango, algo como { inicio=fecha1, fin=fecha2, duracion=numero } aunque lo veo algo noc, igual guardar con fecha hace que no se ponga el dia por aparte
-# //puede que la duración se guarde en segundos para no andar quemandome tanto el coco
-
-# //ORGANIZAR
-# ITERAR EN rango_utilizable COMO i //no tocará los días inhabiles, creo que no es necesario definirlos
-#   POR actividad DE actividades //ya vienen ordenadas por prioridad y etiqueta si esta se especificó
-#       SI actividad.duracion ES MAYOR A rango_utilizable[i].duracion ENTONCES SALTAR
-#       ASIGNAR rango_utilizable[i].inicio A actividad.start.dateTime
-#       CALCULAR fecha en la que acaba COMO actividad.end.dateTime
-#       SIGUIENTE i //así como lo veo no tiene backtracking
-# //creo que las iteraciones están al revés, debería iterar primero por actividad y después por el otro
-# //no recalcula el tiempo disponible
-
-# //va de nuez pq no quiero borrar todo, el bloque anterior hagan d cuenta q no existe
-# POR actividad DE actividades
-#   ITERAR EN rango_utilizable COMO i
-#       SI actividad.duracion MAYOR A rango_utilizable[i].duracion ENTONCES SALTAR FIN SI
-#       ASIGNAR rango_utilizable[i].inicio A actividad.start.dateTime
-#       CALCULAR fecha en la que acaba COMO actividad.end.dateTime
-#       CALCULAR actividad.duracion //de nuevo
-#       SI actividad.duracion IGUAL A rango_utilizable[i].duracion ENTONCES rango_utilizable[i].pop() //o su equivalente en python
-#       SI NO rango_utilizable[i].inicio = actividad.end.dateTime + gap FIN SI
-#       SIGUIENTE i //así como lo veo no tiene backtracking
-
-# //aún falta pero bueno
-
-# FIN
-# todo esto se descarta pq es una cochinada segun chat y todavia es voraz xd
-
-# INICIO
-
 # //será beam search pq no le entendi al otro y tardaria muchisimo mas d lo optimo
 
 # INICIO FUNCION getTime( actividades, tiempo_descanso )
@@ -108,17 +54,25 @@ from model.calendarModel import agenda, actividades_response
 
 # algun dia pondre estas en model pq ahi van
 
+# DICCIONARIOS DE APOYO
+
 class rango_tiempo(TypedDict):
     inicio:date
     fin:date
+
+# -------------------------------------------------------------------------------
 
 class rango_tiempo_dt(TypedDict):
     inicio:datetime
     fin:datetime
 
+# -------------------------------------------------------------------------------
+
 class restricciones_etiquetas(TypedDict):
     tag:str
     horario:rango_tiempo
+
+# -------------------------------------------------------------------------------
 
 class candidato:
     tareas_agendadas:list[agenda] = []
@@ -132,10 +86,42 @@ def convertDate(fecha:str, tiempo:time) -> datetime:
     fecha_parsed = date.strptime( fecha, "%Y-%m-%d" )
     return datetime.combine(fecha_parsed, tiempo)
 
-def convertStrToDt(fecha:str):
-    return datetime.strptime(fecha, "%Y-%m-%d %H:%M:%S")
+# -------------------------------------------------------------------------------
 
-def getTime():
+def convertStrToDt(fecha:str) -> datetime:
+    return datetime.fromisoformat(fecha)
+
+# -------------------------------------------------------------------------------
+
+def orderByPriority(e:agenda):
+    match e["extras"]["prioridad"]:
+        case "alta":
+            return 1
+        case "media":
+            return 2
+        case "baja":
+            return 3
+
+# -------------------------------------------------------------------------------
+
+def fuseTimes(tiempos:list[rango_tiempo_dt]) -> list[rango_tiempo_dt]:
+    if not tiempos:
+        return []
+    tiempo_reordenado:list[rango_tiempo_dt] = sorted(tiempos, key=lambda e:e["inicio"])
+
+    fusionados:list[rango_tiempo_dt] = [tiempo_reordenado[0]]
+
+    for tarea in tiempo_reordenado[1:]:
+        tarea_previa = fusionados[-1]
+        if tarea["inicio"] <= tarea_previa["fin"]:
+            tarea_previa["fin"] = max(tarea["fin"], tarea_previa["fin"])
+        else:
+            fusionados.append(tarea)
+    return fusionados
+
+# -------------------------------------------------------------------------------
+
+def getFreeTime():
     print("aaa")
 
 # FUNCIÓN PRINCIPAL
@@ -154,9 +140,10 @@ def sortCalendar(
     actividades_estaticas:list[agenda] = []
     actividades_libres:list[agenda] = []
 
-    # tiempo_libre:list[rango_tiempo_dt] = []
+    # tiempo_libre:list[rango_tiempo_dt] = [] # no sé como manejarlo, entiendo que lo mejor seria tenerlo pero que tal si se acomodan las tareas alrededor del tiempo ocupado
     tiempo_ocupado:list[rango_tiempo_dt] = []
 
+    # para actividades que tomen todo el dia
     inicioDia:time = time(0,0,0)
     finDia:time = time(23,59,59)
 
@@ -172,15 +159,18 @@ def sortCalendar(
             actividades_estaticas.append(actividad)
         else:
             actividades_libres.append(actividad)
+        
+    actividades_libres.sort(key=orderByPriority)
 
     fecha_maxima = date.today() + timedelta(days=dias_contemplados)
 
-    for i in range(dias_contemplados):
+    for i in range(dias_contemplados): # se suppone que con este se transforman en datetime los dias libres, podria ser una funcion de apoyo
         print(i)
 
     print(fecha_maxima) # el editor m da lata si no accedo a los datos
     print(ancho_haz)
     print(tiempo_ocupado)
+    print(actividades_libres)
 
 
 
@@ -193,7 +183,7 @@ hola:agenda = {
     "end": { "date":date.today().__str__() },
     "transparency":"opaque",
     "reminders": { "useDefault":True },
-    "extras": { "etiquetas":[{"etiqueta":"chamba", "color":"#ff0000"}], "prioridad":"alta" }
+    "extras": { "etiquetas":{"etiqueta":"chamba", "color":"#ff0000"}, "prioridad":"alta" }
 }
 adios:agenda = {
     "id":"fwfwfsscd",
@@ -204,7 +194,7 @@ adios:agenda = {
     "end": { "date":(date.today()+timedelta(days=1)).__str__() },
     "transparency":"opaque",
     "reminders": { "useDefault":True },
-    "extras": { "etiquetas":[{"etiqueta":"estudio", "color":"#00ff00"}], "prioridad":"alta" }
+    "extras": { "etiquetas":{"etiqueta":"estudio", "color":"#00ff00"}, "prioridad":"alta" }
 }
 
 njkadaskd:agenda = {
@@ -216,11 +206,23 @@ njkadaskd:agenda = {
     "end": { "date":(date.today()+timedelta(days=2)).__str__() },
     "transparency":"opaque",
     "reminders": { "useDefault":True },
-    "extras": { "etiquetas":[{"etiqueta":"personal", "color":"#0000ff"}], "prioridad":"alta" }
+    "extras": { "etiquetas":{"etiqueta":"personal", "color":"#0000ff"}, "prioridad":"alta" }
 }
 
-todo:actividades_response = { "defaultReminders":[{ "method":"popup", "minutes":2 }], "items": [ hola, adios, njkadaskd ] }
+transparente:agenda = {
+    "id":"soy transparente",
+    "created":datetime.now().__str__(),
+    "updated":datetime.now().__str__(),
+    "summary":"jhdsdkfhddjjdjdjdjd",
+    "start": { "dateTime":(datetime.today()+timedelta(days=3)).__str__(), "timeZone":"America/Mexico_City" },
+    "end": { "dateTime":(datetime.today()+timedelta(days=3, hours=2)).__str__(), "timeZone":"America/Mexico_City" },
+    "transparency":"transparent",
+    "reminders": { "useDefault":True },
+    "extras": { "etiquetas":{"etiqueta":"personal", "color":"#0000ff"}, "prioridad":"alta" }
+}
+
+todo:actividades_response = { "defaultReminders":[{ "method":"popup", "minutes":2 }], "items": [ hola, adios, njkadaskd, transparente ] }
 
 print(todo)
 
-sortCalendar(todo["items"], { "inicio":datetime.now(), "fin":datetime.now() })
+sortCalendar(todo["items"], { "inicio":datetime.now(), "fin":datetime.now()+timedelta(hours=3) })

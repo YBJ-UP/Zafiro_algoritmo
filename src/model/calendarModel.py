@@ -29,7 +29,7 @@ class etiquetas_dict(TypedDict):
 
 class extras_dict(TypedDict):
     prioridad: Literal["baja","media","alta"]
-    etiquetas: list[etiquetas_dict]
+    etiquetas: etiquetas_dict
 
 # -------------------------------------------------------------------------------
 
