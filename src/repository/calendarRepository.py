@@ -170,7 +170,7 @@ def sortCalendar(
                 fin = convertDate(e["end"]["date"], finDia)
             puntaje_duracion = -(fin-inicio).total_seconds()
         
-        return (puntaje_prioridad, puntaje_etiquetas, puntaje_duracion)
+        return (puntaje_etiquetas, puntaje_prioridad, puntaje_duracion)
 
 
     ancho_haz = 5
