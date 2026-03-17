@@ -93,17 +93,6 @@ def convertStrToDt(fecha:str) -> datetime:
 
 # -------------------------------------------------------------------------------
 
-def orderByPriority(e:agenda):
-    match e["extras"]["prioridad"]:
-        case "alta":
-            return 1
-        case "media":
-            return 2
-        case "baja":
-            return 3
-
-# -------------------------------------------------------------------------------
-
 def mergeTimes(tiempos:list[rango_tiempo_dt]) -> list[rango_tiempo_dt]:
     if not tiempos:
         return []
@@ -145,13 +134,45 @@ def getFreeTime(tiempo_ocupado:list[rango_tiempo_dt], inicio:datetime, fin:datet
 
 def sortCalendar(
         actividades:list[agenda],
-        tiempo_descanso:rango_tiempo, # este se concertirá en un arreglo de dateTime
+        tiempo_descanso:rango_tiempo, # este se convertirá en un arreglo de dateTime
         dias_contemplados:int = 7, # hasta cuantos dias se puede recorrer una tarea supongo
         gap:int = 15,
-        tag:str | None = None,
-        tag_restriction:restricciones_etiquetas | None = None, #podria venir como un arreglo de restricciones pero por los tiempos capaz y ni siquiera se implemente
-        long_first:bool = False
+        tag:str | None = None, # de acuerdo a qué etiqueta se va a ordenar
+        long_first:bool = False,
+        tag_restriction:restricciones_etiquetas | None = None #podria venir como un arreglo de restricciones pero por los tiempos capaz y ni siquiera se implemente
 ) -> None: #none por ahora
+    
+    def orderTasks(e:agenda):
+        puntaje_prioridad:int = 0
+        puntaje_etiquetas:int = 0
+        puntaje_duracion:float = 0
+
+        match e["extras"]["prioridad"]:
+            case "alta":
+                puntaje_prioridad+=1
+            case "media":
+                puntaje_prioridad+=2
+            case "baja":
+                puntaje_prioridad+=3
+
+        if tag is not None:
+            if e["extras"]["etiquetas"]["etiqueta"] != tag:
+                puntaje_etiquetas+=1
+
+        if long_first:
+            if "dateTime" in e["start"]:
+                assert "dateTime" in e["end"]
+                inicio: datetime = convertStrToDt(e["start"]["dateTime"])
+                fin: datetime = convertStrToDt(e["end"]["dateTime"])
+            else:
+                assert "date" in e["start"] and "date" in e["end"]
+                inicio = convertDate(e["start"]["date"], inicioDia)
+                fin = convertDate(e["end"]["date"], finDia)
+            puntaje_duracion = -(fin-inicio).total_seconds()
+        
+        return (puntaje_prioridad, puntaje_etiquetas, puntaje_duracion)
+
+
     ancho_haz = 5
 
     actividades_estaticas:list[agenda] = []
@@ -177,7 +198,7 @@ def sortCalendar(
         else:
             actividades_libres.append(actividad)
         
-    actividades_libres.sort(key=orderByPriority) # este se deberia de acomodar dps siento yo
+    actividades_libres.sort(key=orderTasks) # este se deberia de acomodar dps siento yo
 
     for i in range(dias_contemplados): # lo queria hacer funcion de apoyo pero ya era quemarme mucho el coco
         dia_actual = date.today() + timedelta(days=i)
@@ -220,9 +241,9 @@ adios:agenda = {
     "summary":"noc",
     "start": { "dateTime":(datetime.today()+timedelta(days=1, hours=9)).__str__() },
     "end": { "dateTime":(datetime.today()+timedelta(days=1, hours=12)).__str__() },
-    "transparency":"opaque",
+    "transparency":"transparent",
     "reminders": { "useDefault":True },
-    "extras": { "etiquetas":{"etiqueta":"estudio", "color":"#00ff00"}, "prioridad":"alta" }
+    "extras": { "etiquetas":{"etiqueta":"estudio", "color":"#00ff00"}, "prioridad":"media" }
 }
 
 njkadaskd:agenda = {
@@ -251,4 +272,4 @@ transparente:agenda = {
 
 todo:actividades_response = { "defaultReminders":[{ "method":"popup", "minutes":2 }], "items": [ hola, adios, njkadaskd, transparente ] }
 
-sortCalendar(todo["items"], { "inicio":time(hour=8), "fin":time(hour=22) })
+sortCalendar(todo["items"], { "inicio":time(hour=8), "fin":time(hour=22) }, tag="estudio", long_first=True)
