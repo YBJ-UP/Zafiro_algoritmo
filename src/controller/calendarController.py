@@ -1,3 +1,42 @@
-# import service.calendarService
+from fastapi import HTTPException
+from pydantic import BaseModel
 
-# acepta y retorna cosas en formato json creo, es lo que el exterior toca, es lo que se mete en rutas
+from model.calendarModel import ActividadesResponse, Agenda, Candidato, RangoTiempo
+from service.calendarService import sortCalendar
+
+class Config(BaseModel):
+    tiempo_descanso: RangoTiempo
+    dias_contemplados:int = 7
+    gap:int = 15
+    tag:int | None = None
+    long_first:bool = False
+
+class CalendarResponse(BaseModel):
+    config:Config
+    calendar:ActividadesResponse
+
+def sortCalendarController(data:CalendarResponse):
+    try:
+        actividades: list[Agenda] = data.calendar.items
+        config: Config = data.config
+
+        if not actividades or not config:
+            raise HTTPException(status_code=400, detail="Datos erróneos o incompletos")
+
+        ganador: Candidato = sortCalendar(
+            actividades= actividades,
+            tiempo_descanso= config.tiempo_descanso,
+            dias_contemplados= config.dias_contemplados,
+            gap= config.gap,
+            tag= config.tag,
+            long_first= config.long_first
+        )
+
+        return {
+            "status":"succes",
+            "code":200,
+            "tareas_agendadas":ganador.tareas_agendadas,
+            "tareas_no_agendadas":ganador.tareas_no_agendadas
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=e)
