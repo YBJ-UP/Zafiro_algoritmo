@@ -93,6 +93,19 @@ def convertStrToDt(fecha:str) -> datetime:
 
 # -------------------------------------------------------------------------------
 
+def getStartEnd(tarea:agenda, inicioDia:time, finDia:time) -> tuple[datetime, datetime]:
+    if "dateTime" in tarea["start"]:
+        assert "dateTime" in tarea["end"]
+        inicio: datetime = convertStrToDt(tarea["start"]["dateTime"])
+        fin: datetime = convertStrToDt(tarea["end"]["dateTime"])
+    else:
+        assert "date" in tarea["start"] and "date" in tarea["end"]
+        inicio = convertDate(tarea["start"]["date"], inicioDia)
+        fin = convertDate(tarea["end"]["date"], finDia)
+    return (inicio, fin)
+
+# -------------------------------------------------------------------------------
+
 def mergeTimes(tiempos:list[rango_tiempo_dt]) -> list[rango_tiempo_dt]:
     if not tiempos:
         return []
@@ -184,14 +197,7 @@ def sortCalendar(
                 puntaje_etiquetas+=1
 
         if long_first:
-            if "dateTime" in e["start"]:
-                assert "dateTime" in e["end"]
-                inicio: datetime = convertStrToDt(e["start"]["dateTime"])
-                fin: datetime = convertStrToDt(e["end"]["dateTime"])
-            else:
-                assert "date" in e["start"] and "date" in e["end"]
-                inicio = convertDate(e["start"]["date"], inicioDia)
-                fin = convertDate(e["end"]["date"], finDia)
+            inicio, fin = getStartEnd(e, inicioDia, finDia)
             puntaje_duracion = -(fin-inicio).total_seconds()
         
         return (puntaje_etiquetas, puntaje_prioridad, puntaje_duracion)
@@ -253,14 +259,7 @@ def sortCalendar(
                     puntaje +=5
 
             if long_first:
-                if "dateTime" in tarea["start"]:
-                    assert "dateTime" in tarea["end"]
-                    inicio: datetime = convertStrToDt(tarea["start"]["dateTime"])
-                    fin: datetime = convertStrToDt(tarea["end"]["dateTime"])
-                else:
-                    assert "date" in tarea["start"] and "date" in tarea["end"]
-                    inicio = convertDate(tarea["start"]["date"], inicioDia)
-                    fin = convertDate(tarea["end"]["date"], finDia)
+                inicio, fin = getStartEnd(tarea, inicioDia, finDia)
                 puntaje += (fin-inicio).total_seconds()/3600
         
         for tarea in candidatos.tareas_no_agendadas:
@@ -272,12 +271,29 @@ def sortCalendar(
                 case "baja":
                     puntaje -= 2
 
+            if tag is not None:
+                if tarea["extras"]["etiquetas"]["etiqueta"] == tag:
+                    puntaje -= 10
+
         return puntaje
     
     ancho_haz = 5
 
     candidato_inicial = candidato()
-    candidatos: list[candidato] = [candidato_inicial]
+    candidato_inicial.tiempo_libre_restante = tiempo_libre
+    candidatos: list[candidato] = [ candidato_inicial ]
+
+    for tarea in actividades_libres:
+        universos:list[agenda] = []
+        inicio, fin = getStartEnd(tarea, inicioDia, finDia)
+        duracion_tarea: float = (fin-inicio).total_seconds()
+
+
+        for universo in candidatos:
+            tarea_agendada = False
+            
+            for hueco in universo.tiempo_libre_restante:
+                if 
 
     print(ancho_haz)
     print(tiempo_ocupado, "\n")
