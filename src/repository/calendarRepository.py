@@ -239,10 +239,10 @@ def sortCalendar(
 
 
 
-    def judgeCandidate(candidato:candidato) -> float:
+    def judgeCandidate(universo:candidato) -> float:
         puntaje:float = 0.0
 
-        for tarea in candidato.tareas_agendadas:
+        for tarea in universo.tareas_agendadas:
             match tarea["extras"]["prioridad"]:
                 case "alta":
                     puntaje += 3
@@ -259,7 +259,7 @@ def sortCalendar(
                 inicio, fin = getStartEnd(tarea, inicioDia, finDia)
                 puntaje += (fin-inicio).total_seconds()/3600
         
-        for tarea in candidato.tareas_no_agendadas:
+        for tarea in universo.tareas_no_agendadas:
             match tarea["extras"]["prioridad"]:
                 case "alta":
                     puntaje -= 6
