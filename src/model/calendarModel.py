@@ -1,4 +1,5 @@
-from typing import Literal
+from datetime import datetime, time
+from typing import Literal, TypedDict
 from pydantic import BaseModel
 
 # -------------------------------------------------------------------------------
@@ -23,7 +24,7 @@ class ReminderDict(BaseModel):
 # -------------------------------------------------------------------------------
 
 class EtiquetasDict(BaseModel):
-    etiqueta:str
+    etiqueta:int
     color:str
 
 # -------------------------------------------------------------------------------
@@ -58,3 +59,27 @@ class ActividadesResponse(BaseModel): # tiene mas atributos pero estos son los q
     items: list[Agenda]
 
 # -------------------------------------------------------------------------------
+
+class RangoTiempo(TypedDict):
+    inicio:time
+    fin:time
+
+# -------------------------------------------------------------------------------
+
+class RangoTiempoDt(TypedDict):
+    inicio:datetime
+    fin:datetime
+
+# -------------------------------------------------------------------------------
+
+class Candidato:
+    tareas_agendadas:list[Agenda]
+    tareas_no_agendadas:list[Agenda]
+    tiempo_libre_restante:list[RangoTiempoDt]
+    puntaje:float
+
+    def __init__(self) -> None:
+        self.tareas_agendadas = []
+        self.tareas_no_agendadas = []
+        self.tiempo_libre_restante = []
+        self.puntaje = 0.0
