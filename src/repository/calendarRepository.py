@@ -235,6 +235,47 @@ def sortCalendar(
 
     ancho_haz = 5
 
+    candidato_inicial = candidato()
+    candidatos: list[candidato] = [candidato_inicial]
+
+    def judgeCandidate(candidatos:candidato) -> float:
+        puntaje:float = 0.0
+
+        for tarea in candidatos.tareas_agendadas:
+            match tarea["extras"]["prioridad"]:
+                case "alta":
+                    puntaje += 3
+                case "media":
+                    puntaje += 2
+                case "baja":
+                    puntaje += 1
+
+            if tag is not None:
+                if tarea["extras"]["etiquetas"]["etiqueta"] == tag:
+                    puntaje +=5
+
+            if long_first:
+                if "dateTime" in tarea["start"]:
+                    assert "dateTime" in tarea["end"]
+                    inicio: datetime = convertStrToDt(tarea["start"]["dateTime"])
+                    fin: datetime = convertStrToDt(tarea["end"]["dateTime"])
+                else:
+                    assert "date" in tarea["start"] and "date" in tarea["end"]
+                    inicio = convertDate(tarea["start"]["date"], inicioDia)
+                    fin = convertDate(tarea["end"]["date"], finDia)
+                puntaje += (fin-inicio).total_seconds()/3600
+        
+        for tarea in candidatos.tareas_no_agendadas:
+            match tarea["extras"]["prioridad"]:
+                case "alta":
+                    puntaje -= 6
+                case "media":
+                    puntaje -= 4
+                case "baja":
+                    puntaje -= 2
+
+        return puntaje
+
     print(ancho_haz)
     print(tiempo_ocupado, "\n")
     print(actividades_libres, "\n")
