@@ -239,10 +239,10 @@ def sortCalendar(
 
 
 
-    def judgeCandidate(candidatos:candidato) -> float:
+    def judgeCandidate(candidato:candidato) -> float:
         puntaje:float = 0.0
 
-        for tarea in candidatos.tareas_agendadas:
+        for tarea in candidato.tareas_agendadas:
             match tarea["extras"]["prioridad"]:
                 case "alta":
                     puntaje += 3
@@ -259,7 +259,7 @@ def sortCalendar(
                 inicio, fin = getStartEnd(tarea, inicioDia, finDia)
                 puntaje += (fin-inicio).total_seconds()/3600
         
-        for tarea in candidatos.tareas_no_agendadas:
+        for tarea in candidato.tareas_no_agendadas:
             match tarea["extras"]["prioridad"]:
                 case "alta":
                     puntaje -= 6
@@ -288,7 +288,7 @@ def sortCalendar(
         for universo in candidatos:
             universo_malo = deepcopy(universo)
             universo_malo.tareas_no_agendadas.append(tarea)
-            universo_malo.puntaje = judgeCandidate(universo)
+            universo_malo.puntaje = judgeCandidate(universo_malo)
             universos_candidato.append(universo_malo)
             
             for i, hueco in enumerate(universo.tiempo_libre_restante):
@@ -298,7 +298,7 @@ def sortCalendar(
                     tarea_clon: agenda = deepcopy(tarea)
 
                     tarea_clon["start"]["dateTime"] = hueco["inicio"].__str__()
-                    tarea_clon["end"]["dateTime"] = hueco["fin"].__str__()
+                    tarea_clon["end"]["dateTime"] = (hueco["inicio"] + timedelta(seconds=duracion_tarea)).__str__()
 
                     universo_nuevo.tareas_agendadas.append(tarea_clon)
 
