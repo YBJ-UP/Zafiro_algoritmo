@@ -6,55 +6,6 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from model.calendarModel import agenda, actividades_response
 
-# aqui son las funcionalidades pero ahorita
-
-# PSEUDOCODIGO
-
-# //metaheuristica
-
-# INICIO
-
-# //será beam search pq no le entendi al otro y tardaria muchisimo mas d lo optimo
-
-# INICIO FUNCION getTime( actividades, tiempo_descanso )
-
-# DEFINIR tiempo_libre:{ inicio:fecha, fin:fecha }[] = [] //algo como { inicio:8:00, fin:9:30 }
-# DEFINIR tiempo_ocupado:{ inicio:hora, fin:hora }[] = []
-
-# tiempo_ocupado.append(tiempo_descanso) //lo mejor sería que el tiempo de descanso ya tuviese la misma forma
-
-# POR CADA actividad DE actividades
-#   SI actividad.transparency IGUAL A opaque ENTONCES
-#       tiempo_ocupado.append({ inicio:actividad.start.dateTime, fin:actividad.end.dateTime }) //si es solo date, creo que se tapa el día entero
-#       //algo para obtener el tiempo libre, la verdad no sé muy bien cómo hacerlo
-#   FIN SI
-
-# RETORNAR { tiempo_libre, tiempo_ocupado }
-
-# FIN FUNCION getTime
-
-# INICIO MAIN( actividades, tiempo_descanso, gap=15, tag?, tag_restriction?, long_first=falso )
-#   //tiempo_descanso: algo como { inicio:20:00, fin:6:15 }
-#   //gap: espacio entre actividades, predeterminado 10
-#   //tag?: ¿se le dará prioridad a cierto tipo de actividades según sus etiquetas?
-#   //tag_restriction?: ¿se pueden restringir ciertas etiquetas a ciertos horarios? tal vez se añada después
-#   //long_first: predeterminado falso, si las actividades largas deberian ir primero
-
-# DEFINIR ancho_haz COMO {valor arbitrario} //de preferencia un numero pequeño
-# DEFINIR candidatos COMO lista[ {candidato:agenda[], puntaje:int} ] //el puntaje se calcula en otra funcion
-
-# response IGUAL A REORDENAR actividades
-#   SEGÚN tag SI EXISTE
-#   SEGÚN prioridad
-#   SEGÚN duracion SI long_first
-
-# { tiempo_libre, tiempo_ocupado } = getTime( actividades, tiempo_descanso )
-
-# FIN MAIN
-# FIN
-
-# algun dia pondre estas en model pq ahi van
-
 # DICCIONARIOS DE APOYO
 
 class rango_tiempo(TypedDict):
