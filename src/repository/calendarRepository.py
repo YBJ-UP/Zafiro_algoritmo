@@ -4,7 +4,7 @@ from typing import TypedDict
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from model.calendarModel import agenda, actividades_response
+from model.calendarModel import Agenda, ActividadesResponse
 
 # DICCIONARIOS DE APOYO
 
@@ -27,8 +27,8 @@ class restricciones_etiquetas(TypedDict):
 # -------------------------------------------------------------------------------
 
 class candidato:
-    tareas_agendadas:list[agenda]
-    tareas_no_agendadas:list[agenda]
+    tareas_agendadas:list[Agenda]
+    tareas_no_agendadas:list[Agenda]
     tiempo_libre_restante:list[rango_tiempo_dt]
     puntaje:float
 
@@ -51,15 +51,15 @@ def convertStrToDt(fecha:str) -> datetime:
 
 # -------------------------------------------------------------------------------
 
-def getStartEnd(tarea:agenda, inicioDia:time, finDia:time) -> tuple[datetime, datetime]:
-    if "dateTime" in tarea["start"]:
-        assert "dateTime" in tarea["end"]
-        inicio: datetime = convertStrToDt(tarea["start"]["dateTime"])
-        fin: datetime = convertStrToDt(tarea["end"]["dateTime"])
+def getStartEnd(tarea:Agenda, inicioDia:time, finDia:time) -> tuple[datetime, datetime]:
+    if tarea.start.dateTime:
+        assert tarea.end.dateTime
+        inicio: datetime = convertStrToDt(tarea.start.dateTime)
+        fin: datetime = convertStrToDt(tarea.end.dateTime)
     else:
-        assert "date" in tarea["start"] and "date" in tarea["end"]
-        inicio = convertDate(tarea["start"]["date"], inicioDia)
-        fin = convertDate(tarea["end"]["date"], finDia)
+        assert tarea.start.date and tarea.end.date
+        inicio = convertDate(tarea.start.date, inicioDia)
+        fin = convertDate(tarea.end.date, finDia)
     return (inicio, fin)
 
 # -------------------------------------------------------------------------------
@@ -124,7 +124,7 @@ def updateBusyTime(hueco_libre:list[rango_tiempo_dt], indice:int, tiempo_restado
 # FUNCIÓN PRINCIPAL
 
 def sortCalendar(
-        actividades:list[agenda],
+        actividades:list[Agenda],
         tiempo_descanso:rango_tiempo, # este se convertirá en un arreglo de dateTime
         dias_contemplados:int = 7, # hasta cuantos dias se puede recorrer una tarea supongo
         gap:int = 15,
@@ -137,12 +137,12 @@ def sortCalendar(
     inicioDia:time = time(0,0,0)
     finDia:time = time(23,59,59)
     
-    def orderTasks(e:agenda):
+    def orderTasks(e:Agenda):
         puntaje_prioridad:int = 0
         puntaje_etiquetas:int = 0
         puntaje_duracion:float = 0
 
-        match e["extras"]["prioridad"]:
+        match e.extras.prioridad:
             case "alta":
                 puntaje_prioridad+=1
             case "media":
@@ -151,7 +151,7 @@ def sortCalendar(
                 puntaje_prioridad+=3
 
         if tag is not None:
-            if e["extras"]["etiquetas"]["etiqueta"] != tag:
+            if e.extras.etiquetas.etiqueta != tag:
                 puntaje_etiquetas+=1
 
         if long_first:
@@ -162,14 +162,14 @@ def sortCalendar(
 
 
 
-    actividades_estaticas:list[agenda] = []
-    actividades_libres:list[agenda] = []
+    actividades_estaticas:list[Agenda] = []
+    actividades_libres:list[Agenda] = []
 
     tiempo_libre:list[rango_tiempo_dt] = [] # no sé como manejarlo, entiendo que lo mejor seria tenerlo pero que tal si se acomodan las tareas alrededor del tiempo ocupado
     tiempo_ocupado:list[rango_tiempo_dt] = []
 
     for actividad in actividades:
-        if actividad["transparency"] == "opaque":
+        if actividad.transparency == "opaque":
             inicio, fin = getStartEnd(actividad, inicioDia, finDia)
             tiempo_ocupado.append({ "inicio":inicio, "fin":fin })
             actividades_estaticas.append(actividad)
@@ -200,7 +200,7 @@ def sortCalendar(
         puntaje:float = 0.0
 
         for tarea in universo.tareas_agendadas:
-            match tarea["extras"]["prioridad"]:
+            match tarea.extras.prioridad:
                 case "alta":
                     puntaje += 3
                 case "media":
@@ -209,7 +209,7 @@ def sortCalendar(
                     puntaje += 1
 
             if tag is not None:
-                if tarea["extras"]["etiquetas"]["etiqueta"] == tag:
+                if tarea.extras.etiquetas.etiqueta == tag:
                     puntaje +=5
 
             if long_first:
@@ -217,7 +217,7 @@ def sortCalendar(
                 puntaje += (fin-inicio).total_seconds()/3600
         
         for tarea in universo.tareas_no_agendadas:
-            match tarea["extras"]["prioridad"]:
+            match tarea.extras.prioridad:
                 case "alta":
                     puntaje -= 6
                 case "media":
@@ -226,7 +226,7 @@ def sortCalendar(
                     puntaje -= 2
 
             if tag is not None:
-                if tarea["extras"]["etiquetas"]["etiqueta"] == tag:
+                if tarea.extras.etiquetas.etiqueta == tag:
                     puntaje -= 10
 
         return puntaje
@@ -252,10 +252,10 @@ def sortCalendar(
                 duracion_hueco: float = (hueco["fin"]-hueco["inicio"]).total_seconds()
                 if duracion_tarea <= duracion_hueco:
                     universo_nuevo: candidato = deepcopy(universo)
-                    tarea_clon: agenda = deepcopy(tarea)
+                    tarea_clon: Agenda = deepcopy(tarea)
 
-                    tarea_clon["start"]["dateTime"] = hueco["inicio"].__str__()
-                    tarea_clon["end"]["dateTime"] = (hueco["inicio"] + timedelta(seconds=duracion_tarea)).__str__()
+                    tarea_clon.start.dateTime = hueco["inicio"].__str__()
+                    tarea_clon.end.dateTime = (hueco["inicio"] + timedelta(seconds=duracion_tarea)).__str__()
 
                     universo_nuevo.tareas_agendadas.append(tarea_clon)
 
@@ -278,7 +278,7 @@ def sortCalendar(
 
 
 
-hola:agenda = {
+hola:Agenda = {
     "id":"kamlkmlkamskmalk",
     "created":datetime.now().__str__(),
     "updated":datetime.now().__str__(),
@@ -289,7 +289,7 @@ hola:agenda = {
     "reminders": { "useDefault":True },
     "extras": { "etiquetas":{"etiqueta":"chamba", "color":"#ff0000"}, "prioridad":"alta" }
 }
-adios:agenda = {
+adios:Agenda = {
     "id":"fwfwfsscd",
     "created":datetime.now().__str__(),
     "updated":datetime.now().__str__(),
@@ -301,7 +301,7 @@ adios:agenda = {
     "extras": { "etiquetas":{"etiqueta":"estudio", "color":"#00ff00"}, "prioridad":"media" }
 }
 
-njkadaskd:agenda = {
+njkadaskd:Agenda = {
     "id":"jdsdnjas",
     "created":datetime.now().__str__(),
     "updated":datetime.now().__str__(),
@@ -313,7 +313,7 @@ njkadaskd:agenda = {
     "extras": { "etiquetas":{"etiqueta":"personal", "color":"#0000ff"}, "prioridad":"alta" }
 }
 
-transparente:agenda = {
+transparente:Agenda = {
     "id":"soy transparente",
     "created":datetime.now().__str__(),
     "updated":datetime.now().__str__(),
@@ -325,6 +325,6 @@ transparente:agenda = {
     "extras": { "etiquetas":{"etiqueta":"personal", "color":"#0000ff"}, "prioridad":"alta" }
 }
 
-todo:actividades_response = { "defaultReminders":[{ "method":"popup", "minutes":2 }], "items": [ hola, adios, njkadaskd, transparente ] }
+todo:ActividadesResponse = { "defaultReminders":[{ "method":"popup", "minutes":2 }], "items": [ hola, adios, njkadaskd, transparente ] }
 
-sortCalendar(todo["items"], { "inicio":time(hour=8), "fin":time(hour=22) }, tag="estudio", long_first=True)
+sortCalendar(todo.items, { "inicio":time(hour=8), "fin":time(hour=22) }, tag="estudio", long_first=True)
