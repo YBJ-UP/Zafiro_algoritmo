@@ -22,7 +22,7 @@ class ReminderDict(BaseModel):
 
 # -------------------------------------------------------------------------------
 
-class etiquetas_dict(BaseModel):
+class EtiquetasDict(BaseModel):
     etiqueta:str
     color:str
 
@@ -30,7 +30,7 @@ class etiquetas_dict(BaseModel):
 
 class ExtrasDict(BaseModel):
     prioridad: Literal["baja","media","alta"]
-    etiquetas: etiquetas_dict
+    etiquetas: EtiquetasDict
 
 # -------------------------------------------------------------------------------
 
