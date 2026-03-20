@@ -1,59 +1,60 @@
-from typing import Literal, NotRequired, TypedDict
+from typing import Literal
+from pydantic import BaseModel
 
 # -------------------------------------------------------------------------------
 
-class date_dict(TypedDict):
-    date:NotRequired[str]
-    dateTime:NotRequired[str]
-    timeZone:NotRequired[str]
+class DateDict(BaseModel):
+    date:str | None = None
+    dateTime:str | None = None
+    timeZone:str | None = None
 
 # -------------------------------------------------------------------------------
 
-class reminder_override(TypedDict):
+class ReminderOverride(BaseModel):
     method:Literal["popup"]
     minutes:int
 
 # -------------------------------------------------------------------------------
 
-class reminder_dict(TypedDict):
+class ReminderDict(BaseModel):
     useDefault:bool
-    overrides:NotRequired[list[reminder_override]]
+    overrides:list[ReminderOverride] | None = None
 
 # -------------------------------------------------------------------------------
 
-class etiquetas_dict(TypedDict):
+class etiquetas_dict(BaseModel):
     etiqueta:str
     color:str
 
 # -------------------------------------------------------------------------------
 
-class extras_dict(TypedDict):
+class ExtrasDict(BaseModel):
     prioridad: Literal["baja","media","alta"]
     etiquetas: etiquetas_dict
 
 # -------------------------------------------------------------------------------
 
-class agenda(TypedDict):
+class Agenda(BaseModel):
     id:str
     created:str
     updated:str
     summary:str
-    start:date_dict
-    end:date_dict
+    start:DateDict
+    end:DateDict
 
     # solo en cosas q c repiten
-    recurringEventId:NotRequired[str]
-    originalStartTime:NotRequired[date_dict]
+    recurringEventId:str | None = None
+    originalStartTime:DateDict | None = None
 
     transparency:Literal["transparent","opaque"]
-    reminders:reminder_dict
+    reminders:ReminderDict
 
-    extras:extras_dict
+    extras:ExtrasDict
 
 # -------------------------------------------------------------------------------
 
-class actividades_response(TypedDict): # tiene mas atributos pero estos son los q realmente importan
-    defaultReminders:list[reminder_override]
-    items: list[agenda]
+class ActividadesResponse(BaseModel): # tiene mas atributos pero estos son los q realmente importan
+    defaultReminders:list[ReminderOverride]
+    items: list[Agenda]
 
 # -------------------------------------------------------------------------------
