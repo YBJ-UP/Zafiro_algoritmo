@@ -4,7 +4,7 @@ from typing import TypedDict
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from model.calendarModel import Agenda, ActividadesResponse
+from model.calendarModel import Agenda, ActividadesResponse, DateDict, EtiquetasDict, ExtrasDict, ReminderDict
 
 # DICCIONARIOS DE APOYO
 
@@ -278,7 +278,7 @@ def sortCalendar(
 
 
 
-hola:Agenda = {
+hola_raw = {
     "id":"kamlkmlkamskmalk",
     "created":datetime.now().__str__(),
     "updated":datetime.now().__str__(),
@@ -289,19 +289,21 @@ hola:Agenda = {
     "reminders": { "useDefault":True },
     "extras": { "etiquetas":{"etiqueta":"chamba", "color":"#ff0000"}, "prioridad":"alta" }
 }
-adios:Agenda = {
-    "id":"fwfwfsscd",
-    "created":datetime.now().__str__(),
-    "updated":datetime.now().__str__(),
-    "summary":"noc",
-    "start": { "dateTime":(datetime.today()+timedelta(days=1, hours=9)).__str__() },
-    "end": { "dateTime":(datetime.today()+timedelta(days=1, hours=12)).__str__() },
-    "transparency":"transparent",
-    "reminders": { "useDefault":True },
-    "extras": { "etiquetas":{"etiqueta":"estudio", "color":"#00ff00"}, "prioridad":"media" }
-}
+hola = Agenda(**hola_raw)
 
-njkadaskd:Agenda = {
+adios:Agenda = Agenda(
+    id="fwfwfsscd",
+    created=datetime.now().__str__(),
+    updated=datetime.now().__str__(),
+    summary="noc",
+    start= DateDict( dateTime=(datetime.today()+timedelta(days=1, hours=9)).__str__() ),
+    end= DateDict( dateTime=(datetime.today()+timedelta(days=1, hours=12)).__str__() ),
+    transparency="transparent",
+    reminders= ReminderDict(useDefault=True),
+    extras= ExtrasDict( etiquetas=EtiquetasDict(etiqueta="estudio", color="#00ff00"), prioridad="media" )
+)
+
+njkadaskd:Agenda = Agenda(**{
     "id":"jdsdnjas",
     "created":datetime.now().__str__(),
     "updated":datetime.now().__str__(),
@@ -311,20 +313,20 @@ njkadaskd:Agenda = {
     "transparency":"opaque",
     "reminders": { "useDefault":True },
     "extras": { "etiquetas":{"etiqueta":"personal", "color":"#0000ff"}, "prioridad":"alta" }
-}
+})
 
-transparente:Agenda = {
-    "id":"soy transparente",
-    "created":datetime.now().__str__(),
-    "updated":datetime.now().__str__(),
-    "summary":"jhdsdkfhddjjdjdjdjd",
-    "start": { "dateTime":(datetime.today()+timedelta(days=3)).__str__(), "timeZone":"America/Mexico_City" },
-    "end": { "dateTime":(datetime.today()+timedelta(days=3, hours=2)).__str__(), "timeZone":"America/Mexico_City" },
-    "transparency":"transparent",
-    "reminders": { "useDefault":True },
-    "extras": { "etiquetas":{"etiqueta":"personal", "color":"#0000ff"}, "prioridad":"alta" }
-}
+transparente:Agenda = Agenda(
+    id="soy transparente",
+    created=datetime.now().__str__(),
+    updated=datetime.now().__str__(),
+    summary="jhdsdkfhddjjdjdjdjd",
+    start= DateDict( dateTime=(datetime.today()+timedelta(days=3)).__str__(), timeZone="America/Mexico_City" ),
+    end= DateDict( dateTime=(datetime.today()+timedelta(days=3, hours=2)).__str__(), timeZone="America/Mexico_City" ),
+    transparency="transparent",
+    reminders= ReminderDict(useDefault=True),
+    extras= ExtrasDict( etiquetas=EtiquetasDict(**{"etiqueta":"personal", "color":"#0000ff"}), prioridad="alta" )
+)
 
-todo:ActividadesResponse = { "defaultReminders":[{ "method":"popup", "minutes":2 }], "items": [ hola, adios, njkadaskd, transparente ] }
+todo:ActividadesResponse = ActividadesResponse( defaultReminders = [{ "method":"popup", "minutes":1 }], items = [ hola, adios, njkadaskd, transparente ] )
 
 sortCalendar(todo.items, { "inicio":time(hour=8), "fin":time(hour=22) }, tag="estudio", long_first=True)
