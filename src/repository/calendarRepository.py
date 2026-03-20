@@ -310,7 +310,7 @@ def sortCalendar(
                     universo_nuevo.puntaje = judgeCandidate(universo_nuevo)
                     universos_candidato.append(universo_nuevo)
                     break
-        
+        candidatos = sorted(universos_candidato, key= lambda x:x.puntaje, reverse=True)[0:ancho_haz]
 
 
     print(ancho_haz)
