@@ -76,10 +76,16 @@ class restricciones_etiquetas(TypedDict):
 # -------------------------------------------------------------------------------
 
 class candidato:
-    tareas_agendadas:list[agenda] = []
-    tareas_no_agendadas:list[agenda] = []
-    tiempo_libre_restante:list[rango_tiempo_dt] = []
-    puntaje:float = 0.0
+    tareas_agendadas:list[agenda]
+    tareas_no_agendadas:list[agenda]
+    tiempo_libre_restante:list[rango_tiempo_dt]
+    puntaje:float
+
+    def __init__(self) -> None:
+        self.tareas_agendadas = []
+        self.tareas_no_agendadas = []
+        self.tiempo_libre_restante = []
+        self.puntaje = 0.0
 
 # FUNCIONES DE APOYO
 
@@ -153,13 +159,13 @@ def substractTime(hueco:rango_tiempo_dt, duracion:float, gap:int) -> rango_tiemp
 
 # -------------------------------------------------------------------------------
 
-def updateBusyTime(tiempo_ocupado:list[rango_tiempo_dt], indice:int, tiempo_restado: rango_tiempo_dt | None) -> list[rango_tiempo_dt]:
-    tiempo_ocupado_copia: list[rango_tiempo_dt] = tiempo_ocupado[:]
+def updateBusyTime(hueco_libre:list[rango_tiempo_dt], indice:int, tiempo_restado: rango_tiempo_dt | None) -> list[rango_tiempo_dt]:
+    hueco_libre_copia: list[rango_tiempo_dt] = hueco_libre[:]
     if tiempo_restado is not None:
-        tiempo_ocupado_copia[indice] = tiempo_restado
+        hueco_libre_copia[indice] = tiempo_restado
     else:
-        tiempo_ocupado_copia.pop(indice)
-    return tiempo_ocupado_copia
+        hueco_libre_copia.pop(indice)
+    return hueco_libre_copia
 
 # -------------------------------------------------------------------------------
 
@@ -286,7 +292,7 @@ def sortCalendar(
         duracion_tarea: float = (fin-inicio).total_seconds()
 
         for universo in candidatos:
-            universo_malo = deepcopy(universo)
+            universo_malo: candidato = deepcopy(universo)
             universo_malo.tareas_no_agendadas.append(tarea)
             universo_malo.puntaje = judgeCandidate(universo_malo)
             universos_candidato.append(universo_malo)
@@ -313,10 +319,11 @@ def sortCalendar(
         candidatos = sorted(universos_candidato, key= lambda x:x.puntaje, reverse=True)[0:ancho_haz]
 
 
-    print(ancho_haz)
-    print(tiempo_ocupado, "\n")
-    print(actividades_libres, "\n")
-    print(tiempo_libre)
+    ganador: candidato = candidatos[0]
+    print(f"Puntaje del ganador: {ganador.puntaje}")
+    print(f"Actividades seleccionadas:\n{ganador.tareas_agendadas}")
+    print(f"Actividades no seleccionadas:\n{ganador.tareas_no_agendadas}")
+    print(f"Tiempo libre restante:\n{ganador.tiempo_libre_restante}")
 
 
 
