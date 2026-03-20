@@ -83,7 +83,7 @@ class candidato:
 # FUNCIONES DE APOYO
 
 def convertDate(fecha:str, tiempo:time) -> datetime:
-    fecha_parsed = date.strptime( fecha, "%Y-%m-%d" )
+    fecha_parsed: date = date.strptime( fecha, "%Y-%m-%d" )
     return datetime.combine(fecha_parsed, tiempo)
 
 # -------------------------------------------------------------------------------
@@ -101,7 +101,7 @@ def mergeTimes(tiempos:list[rango_tiempo_dt]) -> list[rango_tiempo_dt]:
     fusionados:list[rango_tiempo_dt] = [tiempo_reordenado[0]]
 
     for tarea in tiempo_reordenado[1:]:
-        tarea_previa = fusionados[-1]
+        tarea_previa: rango_tiempo_dt = fusionados[-1]
         if tarea["inicio"] <= tarea_previa["fin"]:
             tarea_previa["fin"] = max(tarea["fin"], tarea_previa["fin"])
         else:
@@ -111,7 +111,7 @@ def mergeTimes(tiempos:list[rango_tiempo_dt]) -> list[rango_tiempo_dt]:
 # -------------------------------------------------------------------------------
 
 def getFreeTime(tiempo_ocupado:list[rango_tiempo_dt], inicio:datetime, fin:datetime) -> list[rango_tiempo_dt]:
-    indice = inicio
+    indice: datetime = inicio
 
     tiempo_reordenado:list[rango_tiempo_dt] = []
 
@@ -129,6 +129,26 @@ def getFreeTime(tiempo_ocupado:list[rango_tiempo_dt], inicio:datetime, fin:datet
 
 # -------------------------------------------------------------------------------
 
+def substractTime(hueco:rango_tiempo_dt, duracion:float, gap:int) -> rango_tiempo_dt | None:
+    fin_tarea: datetime = hueco["inicio"] + timedelta(seconds=duracion)
+    inicio_hueco_nuevo: datetime = fin_tarea + timedelta(minutes=gap)
+
+    if inicio_hueco_nuevo < hueco["fin"]:
+        return { "inicio":inicio_hueco_nuevo, "fin":hueco["fin"] }
+    return None
+
+# -------------------------------------------------------------------------------
+
+def updateBusyTime(tiempo_ocupado:list[rango_tiempo_dt], indice:int, tiempo_restado: rango_tiempo_dt | None) -> list[rango_tiempo_dt]:
+    tiempo_ocupado_copia: list[rango_tiempo_dt] = tiempo_ocupado[:]
+    if tiempo_restado is not None:
+        tiempo_ocupado_copia[indice] = tiempo_restado
+    else:
+        tiempo_ocupado_copia.pop(indice)
+    return tiempo_ocupado_copia
+
+# -------------------------------------------------------------------------------
+
 
 # FUNCIÓN PRINCIPAL
 
@@ -141,6 +161,10 @@ def sortCalendar(
         long_first:bool = False,
         tag_restriction:restricciones_etiquetas | None = None #podria venir como un arreglo de restricciones pero por los tiempos capaz y ni siquiera se implemente
 ) -> None: #none por ahora
+
+    # para actividades que tomen todo el dia
+    inicioDia:time = time(0,0,0)
+    finDia:time = time(23,59,59)
     
     def orderTasks(e:agenda):
         puntaje_prioridad:int = 0
@@ -172,18 +196,11 @@ def sortCalendar(
         
         return (puntaje_etiquetas, puntaje_prioridad, puntaje_duracion)
 
-
-    ancho_haz = 5
-
     actividades_estaticas:list[agenda] = []
     actividades_libres:list[agenda] = []
 
     tiempo_libre:list[rango_tiempo_dt] = [] # no sé como manejarlo, entiendo que lo mejor seria tenerlo pero que tal si se acomodan las tareas alrededor del tiempo ocupado
     tiempo_ocupado:list[rango_tiempo_dt] = []
-
-    # para actividades que tomen todo el dia
-    inicioDia:time = time(0,0,0)
-    finDia:time = time(23,59,59)
 
 
     for actividad in actividades:
@@ -201,20 +218,22 @@ def sortCalendar(
     actividades_libres.sort(key=orderTasks) # este se deberia de acomodar dps siento yo
 
     for i in range(dias_contemplados): # lo queria hacer funcion de apoyo pero ya era quemarme mucho el coco
-        dia_actual = date.today() + timedelta(days=i)
-        dia_siguiente = dia_actual + timedelta(days=1)
+        dia_actual: date = date.today() + timedelta(days=i)
+        dia_siguiente: date = dia_actual + timedelta(days=1)
 
-        inicio_descanso = datetime.combine(dia_actual, tiempo_descanso["fin"])
-        fin_descanso = datetime.combine(dia_siguiente, tiempo_descanso["inicio"])
+        inicio_descanso: datetime = datetime.combine(dia_actual, tiempo_descanso["fin"])
+        fin_descanso: datetime = datetime.combine(dia_siguiente, tiempo_descanso["inicio"])
 
         tiempo_ocupado.append({"inicio":inicio_descanso, "fin":fin_descanso})
     
     tiempo_ocupado = mergeTimes(tiempo_ocupado)
 
-    dia_inicio = datetime.now() + timedelta(minutes=gap)
-    dia_limite = datetime.combine(date.today() + timedelta(days=dias_contemplados), time(hour=23, minute=59, second=59))
+    dia_inicio: datetime = datetime.now() + timedelta(minutes=gap)
+    dia_limite: datetime = datetime.combine(date.today() + timedelta(days=dias_contemplados), time(hour=23, minute=59, second=59))
 
     tiempo_libre = getFreeTime(tiempo_ocupado, dia_inicio, dia_limite)
+
+    ancho_haz = 5
 
     print(ancho_haz)
     print(tiempo_ocupado, "\n")
