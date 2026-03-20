@@ -1,3 +1,4 @@
+from copy import deepcopy
 from datetime import date, datetime, time, timedelta
 from typing import TypedDict
 import sys
@@ -78,7 +79,7 @@ class candidato:
     tareas_agendadas:list[agenda] = []
     tareas_no_agendadas:list[agenda] = []
     tiempo_libre_restante:list[rango_tiempo_dt] = []
-    puntaje:int = 0
+    puntaje:float = 0.0
 
 # FUNCIONES DE APOYO
 
@@ -212,12 +213,8 @@ def sortCalendar(
 
     for actividad in actividades:
         if actividad["transparency"] == "opaque":
-            if "date" in actividad["start"]:
-                assert "date" in actividad["end"]
-                tiempo_ocupado.append( { "inicio":convertDate( actividad["start"]["date"], inicioDia ), "fin":convertDate( actividad["end"]["date"], finDia ) } )
-            else:
-                assert "dateTime" in actividad["start"] and "dateTime" in actividad["end"]
-                tiempo_ocupado.append({ "inicio":convertStrToDt(actividad["start"]["dateTime"]), "fin":convertStrToDt(actividad["end"]["dateTime"]) })
+            inicio, fin = getStartEnd(actividad, inicioDia, finDia)
+            tiempo_ocupado.append({ "inicio":inicio, "fin":fin })
             actividades_estaticas.append(actividad)
         else:
             actividades_libres.append(actividad)
@@ -284,16 +281,37 @@ def sortCalendar(
     candidatos: list[candidato] = [ candidato_inicial ]
 
     for tarea in actividades_libres:
-        universos:list[agenda] = []
+        universos_candidato:list[candidato] = []
         inicio, fin = getStartEnd(tarea, inicioDia, finDia)
         duracion_tarea: float = (fin-inicio).total_seconds()
 
-
         for universo in candidatos:
-            tarea_agendada = False
+            universo_malo = deepcopy(universo)
+            universo_malo.tareas_no_agendadas.append(tarea)
+            universo_malo.puntaje = judgeCandidate(universo)
+            universos_candidato.append(universo_malo)
             
-            for hueco in universo.tiempo_libre_restante:
-                if 
+            for i, hueco in enumerate(universo.tiempo_libre_restante):
+                duracion_hueco: float = (hueco["fin"]-hueco["inicio"]).total_seconds()
+                if duracion_tarea <= duracion_hueco:
+                    universo_nuevo: candidato = deepcopy(universo)
+                    tarea_clon: agenda = deepcopy(tarea)
+
+                    tarea_clon["start"]["dateTime"] = hueco["inicio"].__str__()
+                    tarea_clon["end"]["dateTime"] = hueco["fin"].__str__()
+
+                    universo_nuevo.tareas_agendadas.append(tarea_clon)
+
+                    universo_nuevo.tiempo_libre_restante = updateBusyTime(
+                        universo_nuevo.tiempo_libre_restante,
+                        i,
+                        substractTime(hueco, duracion_tarea, gap)
+                    )
+                    universo_nuevo.puntaje = judgeCandidate(universo_nuevo)
+                    universos_candidato.append(universo_nuevo)
+                    break
+        
+
 
     print(ancho_haz)
     print(tiempo_ocupado, "\n")
