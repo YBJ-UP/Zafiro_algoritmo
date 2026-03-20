@@ -196,12 +196,13 @@ def sortCalendar(
         
         return (puntaje_etiquetas, puntaje_prioridad, puntaje_duracion)
 
+
+
     actividades_estaticas:list[agenda] = []
     actividades_libres:list[agenda] = []
 
     tiempo_libre:list[rango_tiempo_dt] = [] # no sé como manejarlo, entiendo que lo mejor seria tenerlo pero que tal si se acomodan las tareas alrededor del tiempo ocupado
     tiempo_ocupado:list[rango_tiempo_dt] = []
-
 
     for actividad in actividades:
         if actividad["transparency"] == "opaque":
@@ -233,10 +234,7 @@ def sortCalendar(
 
     tiempo_libre = getFreeTime(tiempo_ocupado, dia_inicio, dia_limite)
 
-    ancho_haz = 5
 
-    candidato_inicial = candidato()
-    candidatos: list[candidato] = [candidato_inicial]
 
     def judgeCandidate(candidatos:candidato) -> float:
         puntaje:float = 0.0
@@ -275,6 +273,11 @@ def sortCalendar(
                     puntaje -= 2
 
         return puntaje
+    
+    ancho_haz = 5
+
+    candidato_inicial = candidato()
+    candidatos: list[candidato] = [candidato_inicial]
 
     print(ancho_haz)
     print(tiempo_ocupado, "\n")
