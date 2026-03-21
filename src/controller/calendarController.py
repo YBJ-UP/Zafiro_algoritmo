@@ -1,8 +1,8 @@
 from fastapi import HTTPException
 from pydantic import BaseModel
 
-from model.calendarModel import ActividadesResponse, Agenda, Candidato, RangoTiempo
-from service.calendarService import sortCalendar
+from src.model.calendarModel import ActividadesResponse, Agenda, Candidato, RangoTiempo
+from src.service.calendarService import sortCalendar
 
 class Config(BaseModel):
     tiempo_descanso: RangoTiempo
