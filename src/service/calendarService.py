@@ -28,8 +28,8 @@ def convertStrToDt(fecha:str) -> datetime:
 def getStartEnd(tarea:Agenda, inicioDia:time, finDia:time, inicio_descanso:time | None = None, fin_descanso:time | None = None, gap:int | None = None) -> tuple[datetime, datetime]:
     if tarea.start.dateTime:
         assert tarea.end.dateTime
-        inicio: datetime = convertStrToDt(tarea.start.dateTime)
-        fin: datetime = convertStrToDt(tarea.end.dateTime)
+        inicio: datetime = convertStrToDt(tarea.start.dateTime).replace(tzinfo=None)
+        fin: datetime = convertStrToDt(tarea.end.dateTime).replace(tzinfo=None)
     else:
         assert tarea.start.date and tarea.end.date
         if inicio_descanso is not None:
