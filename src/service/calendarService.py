@@ -25,15 +25,22 @@ def convertStrToDt(fecha:str) -> datetime:
 
 # -------------------------------------------------------------------------------
 
-def getStartEnd(tarea:Agenda, inicioDia:time, finDia:time) -> tuple[datetime, datetime]:
+def getStartEnd(tarea:Agenda, inicioDia:time, finDia:time, inicio_descanso:time | None = None, fin_descanso:time | None = None, gap:int | None = None) -> tuple[datetime, datetime]:
     if tarea.start.dateTime:
         assert tarea.end.dateTime
         inicio: datetime = convertStrToDt(tarea.start.dateTime)
         fin: datetime = convertStrToDt(tarea.end.dateTime)
     else:
         assert tarea.start.date and tarea.end.date
-        inicio = convertDate(tarea.start.date, inicioDia)
-        fin = convertDate(tarea.end.date, finDia)
+        if inicio_descanso is not None:
+            assert fin_descanso is not None and gap is not None
+            inicio_descanso = (datetime.combine(date.today(), inicio_descanso) + timedelta(minutes=gap)).time()
+            fin_descanso = (datetime.combine(date.today(), fin_descanso) - timedelta(minutes=gap)).time()
+            inicio:datetime = convertDate(tarea.start.date, inicio_descanso)
+            fin:datetime = convertDate(tarea.end.date, fin_descanso)
+        else:
+            inicio:datetime = convertDate(tarea.start.date, inicioDia)
+            fin:datetime = convertDate(tarea.end.date, finDia)
     return (inicio, fin)
 
 # -------------------------------------------------------------------------------
@@ -218,7 +225,7 @@ def sortCalendar(
 
     for tarea in actividades_libres:
         universos_Candidato:list[Candidato] = []
-        inicio, fin = getStartEnd(tarea=tarea, inicioDia=inicioDia, finDia=finDia)
+        inicio, fin = getStartEnd(tarea=tarea, inicioDia=inicioDia, finDia=finDia, gap=gap)
         duracion_tarea: float = (fin-inicio).total_seconds()
 
         for universo in Candidatos:
@@ -248,12 +255,7 @@ def sortCalendar(
                     break
         Candidatos = sorted(universos_Candidato, key= lambda x:x.puntaje, reverse=True)[0:ancho_haz]
 
-
     ganador: Candidato = Candidatos[0]
-    print(f"Puntaje del ganador: {ganador.puntaje}")
-    print(f"Actividades seleccionadas:\n{ganador.tareas_agendadas}")
-    print(f"Actividades no seleccionadas:\n{ganador.tareas_no_agendadas}")
-    print(f"Tiempo libre restante:\n{ganador.tiempo_libre_restante}")
     return ganador
 
 
