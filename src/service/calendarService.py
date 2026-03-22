@@ -37,7 +37,7 @@ def getStartEnd(tarea:Agenda, inicioDia:time, finDia:time, inicio_descanso:time 
             inicio_descanso = (datetime.combine(date.today(), inicio_descanso) + timedelta(minutes=gap)).time()
             fin_descanso = (datetime.combine(date.today(), fin_descanso) - timedelta(minutes=gap)).time()
             inicio:datetime = convertDate(tarea.start.date, inicio_descanso)
-            fin:datetime = convertDate(tarea.end.date, fin_descanso)
+            fin:datetime = convertDate(tarea.start.date, fin_descanso)
         else:
             inicio:datetime = convertDate(tarea.start.date, inicioDia)
             fin:datetime = convertDate(tarea.end.date, finDia)
