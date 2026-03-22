@@ -225,7 +225,7 @@ def sortCalendar(
 
     for tarea in actividades_libres:
         universos_Candidato:list[Candidato] = []
-        inicio, fin = getStartEnd(tarea=tarea, inicioDia=inicioDia, finDia=finDia, gap=gap)
+        inicio, fin = getStartEnd(tarea=tarea, inicioDia=inicioDia, finDia=finDia, inicio_descanso=hora_inicio_descanso, fin_descanso=hora_fin_descanso, gap=gap)
         duracion_tarea: float = (fin-inicio).total_seconds()
 
         for universo in Candidatos:
