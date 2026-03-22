@@ -34,13 +34,13 @@ def getStartEnd(tarea:Agenda, inicioDia:time, finDia:time, inicio_descanso:time 
         assert tarea.start.date and tarea.end.date
         if inicio_descanso is not None:
             assert fin_descanso is not None and gap is not None
-            inicio_descanso = (datetime.combine(date.today(), inicio_descanso) + timedelta(minutes=gap)).time()
-            fin_descanso = (datetime.combine(date.today(), fin_descanso) - timedelta(minutes=gap)).time()
-            inicio:datetime = convertDate(tarea.start.date, inicio_descanso)
-            fin:datetime = convertDate(tarea.start.date, fin_descanso)
+            inicio_descanso_nuevo = (datetime.combine(date.today(), inicio_descanso) + timedelta(minutes=gap)).time()
+            fin_descanso_nuevo = (datetime.combine(date.today(), fin_descanso)).time()
+            inicio:datetime = convertDate(tarea.start.date, inicio_descanso_nuevo)
+            fin:datetime = convertDate(tarea.start.date, fin_descanso_nuevo)
         else:
             inicio:datetime = convertDate(tarea.start.date, inicioDia)
-            fin:datetime = convertDate(tarea.end.date, finDia)
+            fin:datetime = convertDate(tarea.start.date, finDia)
     return (inicio, fin)
 
 # -------------------------------------------------------------------------------
@@ -164,6 +164,10 @@ def sortCalendar(
         
     actividades_libres.sort(key=orderTasks) # este se deberia de acomodar dps siento yo
 
+    madrugada:datetime = datetime.combine(date.today(), inicioDia)
+    fin_madrugada:datetime = datetime.combine(date.today(), hora_inicio_descanso)
+    tiempo_ocupado.append({ "inicio":madrugada, "fin":fin_madrugada })
+
     for i in range(dias_contemplados): # lo queria hacer funcion de apoyo pero ya era quemarme mucho el coco
         dia_actual: date = date.today() + timedelta(days=i)
         dia_siguiente: date = dia_actual + timedelta(days=1)
@@ -175,7 +179,7 @@ def sortCalendar(
     
     tiempo_ocupado = mergeTimes(tiempos=tiempo_ocupado)
 
-    dia_inicio: datetime = datetime.now() + timedelta(minutes=gap)
+    dia_inicio: datetime = max(fin_madrugada+timedelta(minutes=gap), datetime.now()+timedelta(minutes=gap)) # se usa fin_madrugada por que es el mismo valor que se utilizaria
     dia_limite: datetime = datetime.combine(date=date.today() + timedelta(days=dias_contemplados), time=time(hour=23, minute=59, second=59))
 
     tiempo_libre = getFreeTime(tiempo_ocupado=tiempo_ocupado, inicio=dia_inicio, fin=dia_limite)
@@ -240,8 +244,8 @@ def sortCalendar(
                     universo_nuevo: Candidato = deepcopy(universo)
                     tarea_clon: Agenda = deepcopy(tarea)
 
-                    tarea_clon.start.dateTime = hueco["inicio"].__str__()
-                    tarea_clon.end.dateTime = (hueco["inicio"] + timedelta(seconds=duracion_tarea)).__str__()
+                    tarea_clon.start.dateTime = hueco["inicio"].isoformat()
+                    tarea_clon.end.dateTime = (hueco["inicio"] + timedelta(seconds=duracion_tarea)).isoformat()
 
                     universo_nuevo.tareas_agendadas.append(tarea_clon)
 
