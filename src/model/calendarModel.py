@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import datetime
 from typing import Literal, TypedDict
 from pydantic import BaseModel
 
@@ -61,8 +61,8 @@ class ActividadesResponse(BaseModel): # tiene mas atributos pero estos son los q
 # -------------------------------------------------------------------------------
 
 class RangoTiempo(TypedDict):
-    inicio:time
-    fin:time
+    inicio:str
+    fin:str
 
 # -------------------------------------------------------------------------------
 

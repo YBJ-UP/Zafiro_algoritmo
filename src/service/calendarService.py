@@ -110,6 +110,11 @@ def sortCalendar(
     # para actividades que tomen todo el dia
     inicioDia:time = time(0,0,0)
     finDia:time = time(23,59,59)
+
+    # para convertir la cadena de entrada del tiempo de descanso a un time
+    formato_hora = "%H : %M : %S"
+    hora_inicio_descanso = datetime.strptime(tiempo_descanso["inicio"], formato_hora).time()
+    hora_fin_descanso = datetime.strptime(tiempo_descanso["fin"], formato_hora).time()
     
     def orderTasks(e:Agenda):
         puntaje_prioridad:int = 0
@@ -129,7 +134,7 @@ def sortCalendar(
                 puntaje_etiquetas+=1
 
         if long_first:
-            inicio, fin = getStartEnd(e, inicioDia, finDia)
+            inicio, fin = getStartEnd(tarea=e, inicioDia=inicioDia, finDia=finDia)
             puntaje_duracion = -(fin-inicio).total_seconds()
         
         return (puntaje_etiquetas, puntaje_prioridad, puntaje_duracion)
@@ -144,7 +149,7 @@ def sortCalendar(
 
     for actividad in actividades:
         if actividad.transparency == "opaque":
-            inicio, fin = getStartEnd(actividad, inicioDia, finDia)
+            inicio, fin = getStartEnd(tarea=actividad, inicioDia=inicioDia, finDia=finDia)
             tiempo_ocupado.append({ "inicio":inicio, "fin":fin })
             actividades_estaticas.append(actividad)
         else:
@@ -156,17 +161,17 @@ def sortCalendar(
         dia_actual: date = date.today() + timedelta(days=i)
         dia_siguiente: date = dia_actual + timedelta(days=1)
 
-        inicio_descanso: datetime = datetime.combine(dia_actual, tiempo_descanso["fin"])
-        fin_descanso: datetime = datetime.combine(dia_siguiente, tiempo_descanso["inicio"])
+        inicio_descanso: datetime = datetime.combine(date=dia_actual, time=hora_fin_descanso)
+        fin_descanso: datetime = datetime.combine(date=dia_siguiente, time=hora_inicio_descanso)
 
         tiempo_ocupado.append({"inicio":inicio_descanso, "fin":fin_descanso})
     
-    tiempo_ocupado = mergeTimes(tiempo_ocupado)
+    tiempo_ocupado = mergeTimes(tiempos=tiempo_ocupado)
 
     dia_inicio: datetime = datetime.now() + timedelta(minutes=gap)
-    dia_limite: datetime = datetime.combine(date.today() + timedelta(days=dias_contemplados), time(hour=23, minute=59, second=59))
+    dia_limite: datetime = datetime.combine(date=date.today() + timedelta(days=dias_contemplados), time=time(hour=23, minute=59, second=59))
 
-    tiempo_libre = getFreeTime(tiempo_ocupado, dia_inicio, dia_limite)
+    tiempo_libre = getFreeTime(tiempo_ocupado=tiempo_ocupado, inicio=dia_inicio, fin=dia_limite)
 
 
 
@@ -187,7 +192,7 @@ def sortCalendar(
                     puntaje +=5
 
             if long_first:
-                inicio, fin = getStartEnd(tarea, inicioDia, finDia)
+                inicio, fin = getStartEnd(tarea=tarea, inicioDia=inicioDia, finDia=finDia)
                 puntaje += (fin-inicio).total_seconds()/3600
         
         for tarea in universo.tareas_no_agendadas:
@@ -213,13 +218,13 @@ def sortCalendar(
 
     for tarea in actividades_libres:
         universos_Candidato:list[Candidato] = []
-        inicio, fin = getStartEnd(tarea, inicioDia, finDia)
+        inicio, fin = getStartEnd(tarea=tarea, inicioDia=inicioDia, finDia=finDia)
         duracion_tarea: float = (fin-inicio).total_seconds()
 
         for universo in Candidatos:
             universo_malo: Candidato = deepcopy(universo)
             universo_malo.tareas_no_agendadas.append(tarea)
-            universo_malo.puntaje = judgeCandidate(universo_malo)
+            universo_malo.puntaje = judgeCandidate(universo=universo_malo)
             universos_Candidato.append(universo_malo)
             
             for i, hueco in enumerate(universo.tiempo_libre_restante):
@@ -234,11 +239,11 @@ def sortCalendar(
                     universo_nuevo.tareas_agendadas.append(tarea_clon)
 
                     universo_nuevo.tiempo_libre_restante = updateBusyTime(
-                        universo_nuevo.tiempo_libre_restante,
-                        i,
-                        substractTime(hueco, duracion_tarea, gap)
+                        hueco_libre=universo_nuevo.tiempo_libre_restante,
+                        indice=i,
+                        tiempo_restado=substractTime(hueco=hueco, duracion=duracion_tarea, gap=gap)
                     )
-                    universo_nuevo.puntaje = judgeCandidate(universo_nuevo)
+                    universo_nuevo.puntaje = judgeCandidate(universo=universo_nuevo)
                     universos_Candidato.append(universo_nuevo)
                     break
         Candidatos = sorted(universos_Candidato, key= lambda x:x.puntaje, reverse=True)[0:ancho_haz]
@@ -304,4 +309,4 @@ transparente:Agenda = Agenda(
 
 todo:ActividadesResponse = ActividadesResponse( defaultReminders = [{ "method":"popup", "minutes":1 }], items = [ hola, adios, njkadaskd, transparente ] )
 
-sortCalendar(todo.items, { "inicio":time(hour=8), "fin":time(hour=22) }, tag=1, long_first=True)
+sortCalendar(todo.items, { "inicio":"8 : 00 : 00", "fin":"22 : 00 : 00" }, tag=1, long_first=True)
