@@ -1,7 +1,5 @@
-import json
-
 from fastapi import HTTPException
-from pydantic import BaseModel, TypeAdapter
+from pydantic import BaseModel
 from src.model.calendarModel import ActividadesResponse, Agenda, Candidato, RangoTiempo
 from src.service.calendarService import sortCalendar
 
@@ -33,8 +31,8 @@ def sortCalendarController(data:CalendarResponse):
             long_first= config.long_first
         )
 
-        tareas_agendadas_json = [Agenda.model_dump(self=tarea, exclude_none=True) for tarea in ganador.tareas_agendadas]
-        tareas_no_agendadas_json = [Agenda.model_dump(self=tarea, exclude_none=True) for tarea in ganador.tareas_no_agendadas]
+        tareas_agendadas_json: list[Agenda] = [Agenda.model_dump(self=tarea, exclude_none=True) for tarea in ganador.tareas_agendadas]
+        tareas_no_agendadas_json: list[Agenda] = [Agenda.model_dump(self=tarea, exclude_none=True) for tarea in ganador.tareas_no_agendadas]
 
         return {
             "status":"succes",
