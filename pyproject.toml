@@ -8,6 +8,7 @@ dependencies = [
     "fastapi>=0.132.0",
     "mypy>=1.19.1",
     "pydantic>=2.12.5",
+    "pyjwt>=2.12.1",
     "python-dotenv>=1.2.1",
     "uvicorn[standard]>=0.41.0",
 ]
