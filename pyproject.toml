@@ -1,7 +1,7 @@
 [project]
 name = "zafiro-algoritmo"
 version = "0.1.0"
-description = "Add your description here"
+description = "Algoritmo de ordenamiento y organización de agendas basado en Beam Search"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
