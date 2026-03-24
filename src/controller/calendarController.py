@@ -35,8 +35,8 @@ def sortCalendarController(data:CalendarResponse):
         return {
             "status":"succes",
             "code":200,
-            "tareas_agendadas":ganador.tareas_agendadas,
-            "tareas_no_agendadas":ganador.tareas_no_agendadas
+            "tareas_agendadas":ganador.tareas_agendadas.__str__(),
+            "tareas_no_agendadas":ganador.tareas_no_agendadas.__str__()
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=e)
