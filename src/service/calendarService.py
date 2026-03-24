@@ -1,10 +1,7 @@
 from copy import deepcopy
 from datetime import date, datetime, time, timedelta
 from typing import TypedDict
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from model.calendarModel import Agenda, Candidato, RangoTiempo, RangoTiempoDt
+from src.model.calendarModel import Agenda, Candidato, RangoTiempo, RangoTiempoDt
 
 # DICCIONARIOS DE APOYO
 
@@ -16,7 +13,7 @@ class RestriccionesEtiquetas(TypedDict): # no se usa por el momento
 
 def convertDate(fecha:str, tiempo:time) -> datetime:
     fecha_parsed: date = date.strptime( fecha, "%Y-%m-%d" )
-    return datetime.combine(fecha_parsed, tiempo)
+    return datetime.combine( date=fecha_parsed, time=tiempo )
 
 # -------------------------------------------------------------------------------
 
@@ -28,19 +25,19 @@ def convertStrToDt(fecha:str) -> datetime:
 def getStartEnd(tarea:Agenda, inicioDia:time, finDia:time, inicio_descanso:time | None = None, fin_descanso:time | None = None, gap:int | None = None) -> tuple[datetime, datetime]:
     if tarea.start.dateTime:
         assert tarea.end.dateTime
-        inicio: datetime = convertStrToDt(tarea.start.dateTime).replace(tzinfo=None)
-        fin: datetime = convertStrToDt(tarea.end.dateTime).replace(tzinfo=None)
+        inicio: datetime = convertStrToDt( fecha=tarea.start.dateTime ).replace( tzinfo=None )
+        fin: datetime = convertStrToDt( fecha=tarea.end.dateTime ).replace( tzinfo=None )
     else:
         assert tarea.start.date and tarea.end.date
         if inicio_descanso is not None:
             assert fin_descanso is not None and gap is not None
-            inicio_descanso_nuevo = (datetime.combine(date.today(), inicio_descanso) + timedelta(minutes=gap)).time()
-            fin_descanso_nuevo = (datetime.combine(date.today(), fin_descanso)).time()
-            inicio:datetime = convertDate(tarea.start.date, inicio_descanso_nuevo)
-            fin:datetime = convertDate(tarea.start.date, fin_descanso_nuevo)
+            inicio_descanso_nuevo: time = ( datetime.combine( date=date.today(), time=inicio_descanso ) + timedelta( minutes=gap ) ).time()
+            fin_descanso_nuevo: time = ( datetime.combine( date=date.today(), time=fin_descanso ) ).time()
+            inicio:datetime = convertDate( fecha=tarea.start.date, tiempo=inicio_descanso_nuevo )
+            fin:datetime = convertDate( fecha=tarea.start.date, tiempo=fin_descanso_nuevo )
         else:
-            inicio:datetime = convertDate(tarea.start.date, inicioDia)
-            fin:datetime = convertDate(tarea.start.date, finDia)
+            inicio:datetime = convertDate( fecha=tarea.start.date, tiempo=inicioDia )
+            fin:datetime = convertDate( fecha=tarea.start.date, tiempo=finDia )
     return (inicio, fin)
 
 # -------------------------------------------------------------------------------
@@ -112,16 +109,16 @@ def sortCalendar(
         tag:int | None = None, # de acuerdo a qué etiqueta se va a ordenar
         long_first:bool = False,
         tag_restriction:RestriccionesEtiquetas | None = None #podria venir como un arreglo de restricciones pero por los tiempos capaz y ni siquiera se implemente
-) -> Candidato: #none por ahora
+) -> Candidato:
 
     # para actividades que tomen todo el dia
-    inicioDia:time = time(0,0,0)
-    finDia:time = time(23,59,59)
+    inicioDia: time = time( hour=0, minute=0, second=0 )
+    finDia: time = time( hour=23, minute=59, second=59)
 
     # para convertir la cadena de entrada del tiempo de descanso a un time
     formato_hora = "%H : %M : %S"
-    hora_inicio_descanso = datetime.strptime(tiempo_descanso["inicio"], formato_hora).time()
-    hora_fin_descanso = datetime.strptime(tiempo_descanso["fin"], formato_hora).time()
+    hora_inicio_descanso: time = datetime.strptime(tiempo_descanso["inicio"], formato_hora).time()
+    hora_fin_descanso: time = datetime.strptime(tiempo_descanso["fin"], formato_hora).time()
     
     def orderTasks(e:Agenda):
         puntaje_prioridad:int = 0
@@ -148,11 +145,11 @@ def sortCalendar(
 
 
 
-    actividades_estaticas:list[Agenda] = []
-    actividades_libres:list[Agenda] = []
+    actividades_estaticas: list[Agenda] = []
+    actividades_libres: list[Agenda] = []
 
-    tiempo_libre:list[RangoTiempoDt] = [] # no sé como manejarlo, entiendo que lo mejor seria tenerlo pero que tal si se acomodan las tareas alrededor del tiempo ocupado
-    tiempo_ocupado:list[RangoTiempoDt] = []
+    tiempo_libre: list[RangoTiempoDt] = [] # no sé como manejarlo, entiendo que lo mejor seria tenerlo pero que tal si se acomodan las tareas alrededor del tiempo ocupado
+    tiempo_ocupado: list[RangoTiempoDt] = []
 
     for actividad in actividades:
         if actividad.transparency == "opaque":
@@ -164,8 +161,8 @@ def sortCalendar(
         
     actividades_libres.sort(key=orderTasks) # este se deberia de acomodar dps siento yo
 
-    madrugada:datetime = datetime.combine(date.today(), inicioDia)
-    fin_madrugada:datetime = datetime.combine(date.today(), hora_inicio_descanso)
+    madrugada: datetime = datetime.combine(date.today(), inicioDia)
+    fin_madrugada: datetime = datetime.combine(date.today(), hora_inicio_descanso)
     tiempo_ocupado.append({ "inicio":madrugada, "fin":fin_madrugada })
 
     for i in range(dias_contemplados): # lo queria hacer funcion de apoyo pero ya era quemarme mucho el coco
@@ -187,7 +184,7 @@ def sortCalendar(
 
 
     def judgeCandidate(universo:Candidato) -> float:
-        puntaje:float = 0.0
+        puntaje: float = 0.0
 
         for tarea in universo.tareas_agendadas:
             match tarea.extras.prioridad:
@@ -228,7 +225,7 @@ def sortCalendar(
     Candidatos: list[Candidato] = [ Candidato_inicial ]
 
     for tarea in actividades_libres:
-        universos_Candidato:list[Candidato] = []
+        universos_Candidato: list[Candidato] = []
         inicio, fin = getStartEnd(tarea=tarea, inicioDia=inicioDia, finDia=finDia, inicio_descanso=hora_inicio_descanso, fin_descanso=hora_fin_descanso, gap=gap)
         duracion_tarea: float = (fin-inicio).total_seconds()
 
