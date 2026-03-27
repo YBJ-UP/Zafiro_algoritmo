@@ -48,5 +48,6 @@ calendario:
 ## Planes a futuro
 - Se planea añadir el parámetro  `restricciones de etiqueta`, que definirá horarios específicos para ciertas etiquetas.
 - Se planea que se puedan priorizar varias etiquetas a la vez en vez de solo una.
+- Se planea poder dar un espacio adicional al comienzo del día.
 
 
