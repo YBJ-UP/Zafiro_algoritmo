@@ -12,17 +12,38 @@ class RestriccionesEtiquetas(TypedDict): # no se usa por el momento
 # FUNCIONES DE APOYO
 
 def convertDate(fecha:str, tiempo:time) -> datetime:
+    """
+    Convierte un objeto `date` a un objeto `datetime`.  
+    Recibe el objeto date y una hora con la cuál se combinará.
+    """
     fecha_parsed: date = date.strptime( fecha, "%Y-%m-%d" )
     return datetime.combine( date=fecha_parsed, time=tiempo )
 
 # -------------------------------------------------------------------------------
 
 def convertStrToDt(fecha:str) -> datetime:
+    """Convierte una cadena de texto que contenga una fecha en formato ISO en un objeto `datetime`."""
     return datetime.fromisoformat(fecha)
 
 # -------------------------------------------------------------------------------
 
 def getStartEnd(tarea:Agenda, inicioDia:time, finDia:time, inicio_descanso:time | None = None, fin_descanso:time | None = None, gap:int | None = None) -> tuple[datetime, datetime]:
+    """
+    Calcula la hora de inicio y hora de fin de un día.  
+    Si la tarea cuenta con los atributos `dateTime`, solamente llama la función `convertStrToDt` y les quita el formato ISO.  
+    Si no, asume que la tarea durará todo el día.  
+    Recibe:
+    1. Un objeto `Agenda`.
+    2. La hora en la que inicia el día.
+    3. La hora en la que acaba el día.  
+    
+    Cuando el atributo `transparency` de la tarea **no** es `'opaque'` y cuenta con los atributos `date`, la función requiere de los siguientes parámetros para funcionar adecuadamente:
+    1. inicio_descanso.
+    2. fin_descanso.
+    3. gap.  
+
+    Si no se reciben estos, tomará el inicio del día (00:00:00) y el fin del día (23:59:59) y no se podrá asignar en ningún día.
+    """
     if tarea.start.dateTime:
         assert tarea.end.dateTime
         inicio: datetime = convertStrToDt( fecha=tarea.start.dateTime ).replace( tzinfo=None )
@@ -43,6 +64,9 @@ def getStartEnd(tarea:Agenda, inicioDia:time, finDia:time, inicio_descanso:time 
 # -------------------------------------------------------------------------------
 
 def mergeTimes(tiempos:list[RangoTiempoDt]) -> list[RangoTiempoDt]:
+    """
+    Combina intervalos de tiempo, solo usado para calcular los intervalos de tiempo ocupado.
+    """
     if not tiempos:
         return []
     tiempo_reordenado:list[RangoTiempoDt] = sorted(tiempos, key=lambda e:e["inicio"])
@@ -60,6 +84,9 @@ def mergeTimes(tiempos:list[RangoTiempoDt]) -> list[RangoTiempoDt]:
 # -------------------------------------------------------------------------------
 
 def getFreeTime(tiempo_ocupado:list[RangoTiempoDt], inicio:datetime, fin:datetime) -> list[RangoTiempoDt]:
+    """
+    Calcula el tiempo libre segun el tiempo ocupado y la hora de incio y fin del día.
+    """
     indice: datetime = inicio
 
     tiempo_reordenado:list[RangoTiempoDt] = []
@@ -79,6 +106,9 @@ def getFreeTime(tiempo_ocupado:list[RangoTiempoDt], inicio:datetime, fin:datetim
 # -------------------------------------------------------------------------------
 
 def substractTime(hueco:RangoTiempoDt, duracion:float, gap:int) -> RangoTiempoDt | None:
+    """
+    Le resta una cantidad de tiempo a un intervalo de tiempo.
+    """
     fin_tarea: datetime = hueco["inicio"] + timedelta(seconds=duracion)
     inicio_hueco_nuevo: datetime = fin_tarea + timedelta(minutes=gap)
 
@@ -88,7 +118,10 @@ def substractTime(hueco:RangoTiempoDt, duracion:float, gap:int) -> RangoTiempoDt
 
 # -------------------------------------------------------------------------------
 
-def updateBusyTime(hueco_libre:list[RangoTiempoDt], indice:int, tiempo_restado: RangoTiempoDt | None) -> list[RangoTiempoDt]:
+def updateFreeTime(hueco_libre:list[RangoTiempoDt], indice:int, tiempo_restado: RangoTiempoDt | None) -> list[RangoTiempoDt]:
+    """
+    Actualiza el tiempo libre restante.
+    """
     hueco_libre_copia: list[RangoTiempoDt] = hueco_libre[:]
     if tiempo_restado is not None:
         hueco_libre_copia[indice] = tiempo_restado
@@ -105,10 +138,10 @@ def sortCalendar(
         actividades:list[Agenda],
         tiempo_descanso:RangoTiempo, # este se convertirá en un arreglo de dateTime
         dias_contemplados:int = 7, # hasta cuantos dias se puede recorrer una tarea supongo
-        gap:int = 15,
-        tag:int | None = None, # de acuerdo a qué etiqueta se va a ordenar
+        gap:int = 15, # minutos que se dejan entre actividades.
+        tag:int | None = None, # de acuerdo a qué etiqueta se va a ordenar.
         long_first:bool = False,
-        tag_restriction:RestriccionesEtiquetas | None = None #podria venir como un arreglo de restricciones pero por los tiempos capaz y ni siquiera se implemente
+        tag_restriction:RestriccionesEtiquetas | None = None # no se implementa por el momento.
 ) -> Candidato:
 
     # para actividades que tomen todo el dia
@@ -116,7 +149,7 @@ def sortCalendar(
     finDia: time = time( hour=23, minute=59, second=59)
 
     # para convertir la cadena de entrada del tiempo de descanso a un time
-    formato_hora = "%H : %M : %S"
+    formato_hora = "%H:%M"
     hora_inicio_descanso: time = datetime.strptime(tiempo_descanso["inicio"], formato_hora).time()
     hora_fin_descanso: time = datetime.strptime(tiempo_descanso["fin"], formato_hora).time()
     
@@ -162,15 +195,15 @@ def sortCalendar(
     actividades_libres.sort(key=orderTasks) # este se deberia de acomodar dps siento yo
 
     madrugada: datetime = datetime.combine(date.today(), inicioDia)
-    fin_madrugada: datetime = datetime.combine(date.today(), hora_inicio_descanso)
+    fin_madrugada: datetime = datetime.combine(date.today(), hora_fin_descanso)
     tiempo_ocupado.append({ "inicio":madrugada, "fin":fin_madrugada })
 
     for i in range(dias_contemplados): # lo queria hacer funcion de apoyo pero ya era quemarme mucho el coco
         dia_actual: date = date.today() + timedelta(days=i)
         dia_siguiente: date = dia_actual + timedelta(days=1)
 
-        inicio_descanso: datetime = datetime.combine(date=dia_actual, time=hora_fin_descanso)
-        fin_descanso: datetime = datetime.combine(date=dia_siguiente, time=hora_inicio_descanso)
+        inicio_descanso: datetime = datetime.combine(date=dia_actual, time=hora_inicio_descanso)
+        fin_descanso: datetime = datetime.combine(date=dia_siguiente, time=hora_fin_descanso)
 
         tiempo_ocupado.append({"inicio":inicio_descanso, "fin":fin_descanso})
     
@@ -184,6 +217,14 @@ def sortCalendar(
 
 
     def judgeCandidate(universo:Candidato) -> float:
+        """
+        Calcula el puntaje de cada actividad segun los siguientes criterios:
+        1. La prioridad de la tarea.
+        2. Si la etiqueta de la tarea es a la que se le dió prioridad, dado que esto se haya hecho.
+        3. Si la tarea es larga, dado que se haya especificado que se quieren primero las tareas largas.
+        
+        Para las tareas no asignadas, califica con los mismos criterios, pero reduciendo el puntaje.
+        """
         puntaje: float = 0.0
 
         for tarea in universo.tareas_agendadas:
@@ -215,12 +256,16 @@ def sortCalendar(
             if tag is not None:
                 if tarea.extras.etiquetas.etiqueta == tag:
                     puntaje -= 10
+            
+            if long_first:
+                inicio, fin = getStartEnd(tarea=tarea, inicioDia=inicioDia, finDia=finDia)
+                puntaje -= (fin-inicio).total_seconds()/3600
 
         return puntaje
     
     ancho_haz = 5
 
-    Candidato_inicial = Candidato()
+    Candidato_inicial = Candidato() # Un candidato vacío.
     Candidato_inicial.tiempo_libre_restante = tiempo_libre
     Candidatos: list[Candidato] = [ Candidato_inicial ]
 
@@ -246,7 +291,7 @@ def sortCalendar(
 
                     universo_nuevo.tareas_agendadas.append(tarea_clon)
 
-                    universo_nuevo.tiempo_libre_restante = updateBusyTime(
+                    universo_nuevo.tiempo_libre_restante = updateFreeTime(
                         hueco_libre=universo_nuevo.tiempo_libre_restante,
                         indice=i,
                         tiempo_restado=substractTime(hueco=hueco, duracion=duracion_tarea, gap=gap)
