@@ -16,13 +16,13 @@ class CalendarResponse(BaseModel):
 
 def sortCalendarController(data:CalendarResponse):
     try:
-        actividades: list[Agenda] = data.calendar.items
+        actividades: list[Agenda] = data.calendar.items # Intenta extraer los datos de agenda y configuracion de los datos recibidos
         config: Config = data.config
 
-        if not actividades or not config:
+        if not actividades or not config: # Da un error en caso de que no vengan los datos completos
             raise HTTPException(status_code=400, detail="Datos erróneos o incompletos")
 
-        ganador: Candidato = sortCalendar(
+        ganador: Candidato = sortCalendar( # Si vienen los datos completos, llama a la función principal
             actividades= actividades,
             tiempo_descanso= config.tiempo_descanso,
             dias_contemplados= config.dias_contemplados,
@@ -31,7 +31,7 @@ def sortCalendarController(data:CalendarResponse):
             long_first= config.long_first
         )
 
-        tareas_agendadas_json: list[Agenda] = [Agenda.model_dump(self=tarea, exclude_none=True) for tarea in ganador.tareas_agendadas]
+        tareas_agendadas_json: list[Agenda] = [Agenda.model_dump(self=tarea, exclude_none=True) for tarea in ganador.tareas_agendadas] # Convierte las listas de tareas en diccionarios
         tareas_no_agendadas_json: list[Agenda] = [Agenda.model_dump(self=tarea, exclude_none=True) for tarea in ganador.tareas_no_agendadas]
 
         return {

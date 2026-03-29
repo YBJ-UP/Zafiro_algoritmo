@@ -17,10 +17,10 @@ def health_check() -> dict[str, str]:
 
 @app.post(path="/api/sort")
 def sort_calendar(payload: Annotated[str | None, Header()] = None) -> str:
-    if payload is not None:
-        decoded_payload = jwt.decode(jwt=payload, key=key, algorithms=["HS256"])
-        data = CalendarResponse(**decoded_payload)
-        response = sortCalendarController(data=data)
-        return jwt.encode(payload=response, key=key, algorithm="HS256" )
+    if payload is not None: # Verifica que se hayan enviado datos en primer lugar
+        decoded_payload = jwt.decode(jwt=payload, key=key, algorithms=["HS256"]) # Decodifica los datos recibidos
+        data: CalendarResponse = CalendarResponse(**decoded_payload) # Convierte los datos en un objeto CalendarResponse
+        response = sortCalendarController(data=data) # Envía los datos al controlador y le asigna la respuesta a response
+        return jwt.encode(payload=response, key=key, algorithm="HS256" ) # Codifica y retrorna la respuesta del controlador
     else:
         raise HTTPException(status_code=400, detail="No se enviaron datos")
