@@ -37,8 +37,6 @@ class ExtrasDict(BaseModel):
 
 class Agenda(BaseModel):
     id:str
-    created:str
-    updated:str
     summary:str
     start:DateDict
     end:DateDict
