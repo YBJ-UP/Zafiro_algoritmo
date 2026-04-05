@@ -12,7 +12,7 @@ class DateDict(BaseModel):
 # -------------------------------------------------------------------------------
 
 class ReminderOverride(BaseModel):
-    method:Literal["popup"]
+    method:Literal["popup", "email"]
     minutes:int
 
 # -------------------------------------------------------------------------------
