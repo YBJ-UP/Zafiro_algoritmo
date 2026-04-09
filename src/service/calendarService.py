@@ -187,7 +187,7 @@ def sortCalendar(
     for actividad in actividades:
         if actividad.transparency == "opaque":
             inicio, fin = getStartEnd(tarea=actividad, inicioDia=inicioDia, finDia=finDia)
-            tiempo_ocupado.append({ "inicio":inicio, "fin":fin })
+            tiempo_ocupado.append({ "inicio":inicio, "fin":fin + timedelta(minutes=gap) })
             actividades_estaticas.append(actividad)
         else:
             actividades_libres.append(actividad)
